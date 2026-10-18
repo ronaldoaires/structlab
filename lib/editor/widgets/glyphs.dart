@@ -1,0 +1,168 @@
+import 'package:flutter/material.dart';
+import 'package:structlab/core/theme/colors.dart';
+import 'package:structlab/domain/models/load.dart';
+import 'package:structlab/domain/models/support.dart';
+
+/// Small drawn icon of a support type.
+class SupportGlyph extends StatelessWidget {
+  const SupportGlyph({
+    super.key,
+    required this.type,
+    this.color = brandBlue,
+    this.size = 26,
+  });
+
+  final SupportType type;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _SupportGlyphPainter(type, color),
+    );
+  }
+}
+
+class _SupportGlyphPainter extends CustomPainter {
+  _SupportGlyphPainter(this.type, this.color);
+
+  final SupportType type;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    switch (type) {
+      case SupportType.pin:
+        canvas.drawPath(
+          Path()
+            ..moveTo(w * 0.5, h * 0.18)
+            ..lineTo(w * 0.25, h * 0.70)
+            ..lineTo(w * 0.75, h * 0.70)
+            ..close(),
+          stroke,
+        );
+        canvas.drawLine(
+            Offset(w * 0.12, h * 0.82), Offset(w * 0.88, h * 0.82), stroke);
+        break;
+      case SupportType.roller:
+        canvas.drawPath(
+          Path()
+            ..moveTo(w * 0.5, h * 0.10)
+            ..lineTo(w * 0.27, h * 0.58)
+            ..lineTo(w * 0.73, h * 0.58)
+            ..close(),
+          stroke,
+        );
+        canvas.drawCircle(Offset(w * 0.37, h * 0.70), w * 0.07, stroke);
+        canvas.drawCircle(Offset(w * 0.63, h * 0.70), w * 0.07, stroke);
+        canvas.drawLine(
+            Offset(w * 0.12, h * 0.86), Offset(w * 0.88, h * 0.86), stroke);
+        break;
+      case SupportType.fixed:
+        canvas.drawLine(
+            Offset(w * 0.5, h * 0.08), Offset(w * 0.5, h * 0.40), stroke);
+        canvas.drawLine(
+            Offset(w * 0.12, h * 0.40), Offset(w * 0.88, h * 0.40), stroke);
+        for (var i = 0; i < 4; i++) {
+          final x = w * (0.22 + i * 0.19);
+          canvas.drawLine(
+              Offset(x + w * 0.10, h * 0.40), Offset(x, h * 0.62), stroke);
+        }
+        break;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SupportGlyphPainter old) =>
+      old.type != type || old.color != color;
+}
+
+/// Small drawn icon of a load kind.
+class LoadGlyph extends StatelessWidget {
+  const LoadGlyph({
+    super.key,
+    required this.kind,
+    this.color = brandBlue,
+    this.size = 26,
+  });
+
+  final LoadKind kind;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _LoadGlyphPainter(kind, color),
+    );
+  }
+}
+
+class _LoadGlyphPainter extends CustomPainter {
+  _LoadGlyphPainter(this.kind, this.color);
+
+  final LoadKind kind;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.7
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final baseY = h * 0.86;
+
+    void arrow(double x, double tailY, double headY) {
+      canvas.drawLine(Offset(x, tailY), Offset(x, headY), stroke);
+      canvas.drawLine(
+          Offset(x, headY), Offset(x - w * 0.07, headY - h * 0.10), stroke);
+      canvas.drawLine(
+          Offset(x, headY), Offset(x + w * 0.07, headY - h * 0.10), stroke);
+    }
+
+    canvas.drawLine(Offset(w * 0.08, baseY), Offset(w * 0.92, baseY), stroke);
+
+    if (kind == LoadKind.concentrated) {
+      arrow(w * 0.5, h * 0.08, baseY - h * 0.02);
+      return;
+    }
+
+    final (h0, h1) = switch (kind) {
+      LoadKind.uniform => (h * 0.58, h * 0.58),
+      LoadKind.triangular => (0.0, h * 0.66),
+      _ => (h * 0.28, h * 0.66),
+    };
+    const n = 4;
+    final x0 = w * 0.12;
+    final x1 = w * 0.88;
+    canvas.drawLine(Offset(x0, baseY - h0), Offset(x1, baseY - h1), stroke);
+    for (var i = 0; i <= n; i++) {
+      final t = i / n;
+      final x = x0 + (x1 - x0) * t;
+      final height = h0 + (h1 - h0) * t;
+      if (height > h * 0.14) {
+        arrow(x, baseY - height, baseY - h * 0.02);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LoadGlyphPainter old) =>
+      old.kind != kind || old.color != color;
+}
