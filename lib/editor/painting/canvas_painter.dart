@@ -41,8 +41,12 @@ class StructuralCanvasPainter extends CustomPainter {
       selectedId: selectedId,
     );
 
-    drawGrid(canvas, size);
-    drawAxes(canvas, size);
+    // Where the model origin is on screen and how many px a meter takes.
+    final origin = modelToScreen(Offset.zero);
+    final scale = modelToScreen(const Offset(1, 0)).dx - origin.dx;
+
+    drawGrid(canvas, size, origin, scale);
+    drawAxes(canvas, size, origin);
     drawMembers(canvas, ctx);
     drawSupports(canvas, ctx);
     drawLoads(canvas, ctx);

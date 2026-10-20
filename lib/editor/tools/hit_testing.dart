@@ -49,33 +49,38 @@ StructuralMember? nearestMember(
 }
 
 /// Distance (meters) from [position] to the drawn arrow of a concentrated
-/// load.
+/// load. [pxPerMeter] is the current screen scale (zoom included).
 double distanceToConcentratedLoad(
   StructuralModel model,
   StructuralLoad load,
-  Offset position,
-) {
+  Offset position, {
+  double pxPerMeter = pixelsPerMeter,
+}) {
   final n = model.nodeById(load.nodeId);
   if (n == null) return double.infinity;
   final a = load.angleDegrees * math.pi / 180;
   final d = Offset(math.cos(a), math.sin(a));
   final clearance = concentratedClearancePx(load, model.loads, model.nodeById);
-  final endM = (clearance > 0 ? clearance + 8 : 5) / pixelsPerMeter;
-  final startM = endM + 33 / pixelsPerMeter;
+  final endM = (clearance > 0 ? clearance + 8 : 5) / pxPerMeter;
+  final startM = endM + 33 / pxPerMeter;
   return distanceToSegment(
       position, n.position - d * endM, n.position - d * startM);
 }
 
 /// Area covered by a distributed load, in model coordinates. Null for
 /// concentrated loads.
-List<Offset>? loadPolygon(StructuralModel model, StructuralLoad load) {
+List<Offset>? loadPolygon(
+  StructuralModel model,
+  StructuralLoad load, {
+  double pxPerMeter = pixelsPerMeter,
+}) {
   if (load.endNodeId == null) return null;
   final a = model.nodeById(load.nodeId)?.position;
   final b = model.nodeById(load.endNodeId!)?.position;
   if (a == null || b == null) return null;
   final ang = load.angleDegrees * math.pi / 180;
   final dir = Offset(math.cos(ang), math.sin(ang));
-  final h1 = loadArrowLengthPx(load, load.q1) / pixelsPerMeter;
-  final h2 = loadArrowLengthPx(load, load.q2) / pixelsPerMeter;
+  final h1 = loadArrowLengthPx(load, load.q1) / pxPerMeter;
+  final h2 = loadArrowLengthPx(load, load.q2) / pxPerMeter;
   return [a, b, b - dir * h2, a - dir * h1];
 }

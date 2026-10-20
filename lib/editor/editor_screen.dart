@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:structlab/editor/dialogs/edit_selected.dart';
 import 'package:structlab/editor/editor_controller.dart';
+import 'package:structlab/editor/editor_types.dart';
 import 'package:structlab/editor/widgets/editor_canvas.dart';
 import 'package:structlab/editor/widgets/editor_header.dart';
 import 'package:structlab/editor/widgets/model_info_bar.dart';
 import 'package:structlab/editor/widgets/properties_panel.dart';
 import 'package:structlab/editor/widgets/status_bar.dart';
 import 'package:structlab/editor/widgets/tool_bar.dart';
-import 'package:structlab/editor/widgets/validate_button.dart';
 
-/// The editor screen: only assembles the pieces and wires the controller.
+/// The editor screen: full-bleed canvas with floating controls on top.
 class EditorScreen extends StatefulWidget {
   const EditorScreen({super.key});
 
@@ -41,7 +41,8 @@ class _EditorScreenState extends State<EditorScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
         content: Text(message),
-        behavior: SnackBarBehavior.floating,
+        // Keeps the message above the floating toolbar.
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 140),
         duration: const Duration(seconds: 2),
       ));
   }
@@ -52,15 +53,51 @@ class _EditorScreenState extends State<EditorScreen> {
       listenable: _c,
       builder: (context, _) => Scaffold(
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
-              EditorHeader(controller: _c),
-              ModelInfoBar(controller: _c),
-              Expanded(child: EditorCanvas(controller: _c)),
-              StatusBar(text: _c.statusMessage),
-              EditorToolBar(controller: _c),
-              PropertiesPanel(controller: _c, onEdit: _edit),
-              ValidateButton(onPressed: _c.validateModel),
+              EditorHeader(controller: _c, onValidate: _c.validateModel),
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: EditorCanvas(controller: _c)),
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ModelInfoBar(controller: _c),
+                          StatusBar(text: _c.statusMessage),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_c.selectedType != SelectedType.none) ...[
+                                PropertiesPanel(controller: _c, onEdit: _edit),
+                                const SizedBox(height: 8),
+                              ],
+                              EditorToolBar(controller: _c),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

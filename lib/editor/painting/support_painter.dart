@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:structlab/domain/models/support.dart';
 import 'package:structlab/editor/editor_types.dart';
 import 'package:structlab/editor/painting/paint_context.dart';
+import 'package:structlab/editor/painting/support_shapes.dart';
 
 void drawSupports(Canvas canvas, PaintContext ctx) {
   for (final support in ctx.model.supports) {
@@ -24,23 +25,7 @@ void drawSupports(Canvas canvas, PaintContext ctx) {
     const point = Offset.zero;
 
     if (support.type == SupportType.fixed) {
-      canvas.drawRect(
-        Rect.fromCenter(
-            center: point + const Offset(0, 11), width: 18, height: 22),
-        fill,
-      );
-      canvas.drawLine(
-        point + const Offset(-9, 0),
-        point + const Offset(9, 0),
-        paint,
-      );
-      for (int i = -7; i <= 7; i += 5) {
-        canvas.drawLine(
-          point + Offset(i.toDouble(), 12),
-          point + Offset(i + 5.0, 18),
-          paint,
-        );
-      }
+      drawFixedSupportShape(canvas, point, 1, paint);
     } else {
       final path = Path()
         ..moveTo(point.dx, point.dy + 2)

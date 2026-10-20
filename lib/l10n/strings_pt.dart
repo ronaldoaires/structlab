@@ -1,15 +1,16 @@
 import 'package:structlab/domain/models/load.dart';
 import 'package:structlab/domain/models/support.dart';
+import 'package:structlab/domain/models/node.dart';
 
 // All user-facing texts (Portuguese) for supports and loads.
-
 
 // ---------------------------------------------------------------------------
 // Screen: header, mode bar, properties panel
 // ---------------------------------------------------------------------------
 
 const String appName = 'StructLab';
-const String appSubtitle = '© Unset. Modelagem estrutural 2D para estudo e ensino.';
+const String appSubtitle =
+    '© UnSet. Modelagem estrutural 2D para estudo e ensino.';
 const String appVersion = '0.1.0';
 const String appLegalese = 'Ferramenta inicial de modelagem estrutural 2D.';
 
@@ -65,7 +66,6 @@ String propsNodeSubtitle(double x, double y) =>
 
 String propsNodeDistances(double fromLeft, double fromRight) =>
     '\nDa esquerda: ${fromLeft.toStringAsFixed(2)} m · Da direita: ${fromRight.toStringAsFixed(2)} m';
-
 
 String supportShortName(SupportType type) => switch (type) {
   SupportType.roller => 'Móvel',
@@ -271,3 +271,26 @@ const String msgLoadUpdated = 'Carga atualizada.';
 String msgDistributedInserted(LoadKind kind) =>
     'Carga ${loadKindName(kind).toLowerCase()} inserida. Edite os valores no lápis.';
 
+const String validateShortLabel = 'Validar';
+const String nodeMenuTitle = 'Tipo de nó';
+const String comingSoonLabel = 'Em breve';
+
+String nodeKindShortName(NodeKind kind) => switch (kind) {
+  NodeKind.rigid => 'Nó',
+  NodeKind.hinge => 'Rótula',
+};
+
+String nodeKindName(NodeKind kind) => switch (kind) {
+  NodeKind.rigid => 'Nó (rígido)',
+  NodeKind.hinge => 'Rótula',
+};
+
+String nodeKindHint(NodeKind kind) => switch (kind) {
+  NodeKind.rigid => 'Toque sobre uma barra para criar um nó. Toque em um nó para definir a distância.',
+  NodeKind.hinge => 'Rótula: libera a rotação entre barras.',
+};
+
+const String resetViewTooltip = 'Centralizar vista';
+const String msgNodeMoved = 'Nó movido.';
+const String msgNodeMoveBlocked =
+    'Esse movimento desalinharia uma carga distribuída ou sobreporia outro nó.';

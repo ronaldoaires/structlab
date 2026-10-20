@@ -3,57 +3,66 @@ import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/editor/editor_controller.dart';
 import 'package:structlab/l10n/strings_pt.dart';
 
-/// Top bar: app name, undo button and options menu.
+/// Top bar: app name, undo, validate and options menu.
 class EditorHeader extends StatelessWidget {
-  const EditorHeader({super.key, required this.controller});
+  const EditorHeader({
+    super.key,
+    required this.controller,
+    required this.onValidate,
+  });
 
   final EditorController controller;
+  final VoidCallback onValidate;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: darkNavy,
-      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: lineColor)),
+      ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+              color: brandBlue,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.architecture, color: Colors.white),
+            child: const Icon(Icons.architecture, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 10),
           const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  appName,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  appSubtitle,
-                  style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
-                ),
-              ],
+            child: Text(
+              appName,
+              style: TextStyle(
+                color: ink,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           IconButton(
             tooltip: undoTooltip,
             onPressed: controller.canUndo ? controller.undo : null,
-            icon: const Icon(Icons.undo, color: Colors.white),
+            icon: const Icon(Icons.undo),
+            color: ink,
+          ),
+          FilledButton.tonalIcon(
+            onPressed: onValidate,
+            icon: const Icon(Icons.check_circle_outline, size: 20),
+            label: const Text(validateShortLabel),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              backgroundColor: brandTint,
+              foregroundColor: brandBlue,
+            ),
           ),
           PopupMenuButton<String>(
             tooltip: moreOptionsTooltip,
-            iconColor: Colors.white,
+            iconColor: ink,
             onSelected: (value) {
               if (value == 'new') controller.newModel();
               if (value == 'about') {
@@ -61,7 +70,7 @@ class EditorHeader extends StatelessWidget {
                   context: context,
                   applicationName: appName,
                   applicationVersion: appVersion,
-                  applicationLegalese: appLegalese,
+                  applicationLegalese: '$appLegalese\n$appSubtitle',
                 );
               }
             },

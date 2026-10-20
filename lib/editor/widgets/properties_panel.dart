@@ -10,7 +10,7 @@ import 'package:structlab/editor/editor_types.dart';
 import 'package:structlab/editor/widgets/glyphs.dart';
 import 'package:structlab/l10n/strings_pt.dart';
 
-/// Shows the data of the selected element with edit and delete buttons.
+/// Floating card with the data of the selected element, edit and delete.
 class PropertiesPanel extends StatelessWidget {
   const PropertiesPanel({
     super.key,
@@ -111,61 +111,67 @@ class PropertiesPanel extends StatelessWidget {
         break;
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(10),
+    return Material(
+      color: Colors.white,
+      elevation: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.3),
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: brandTint,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: iconWidget ?? Icon(icon, color: brandBlue, size: 22),
+              ),
             ),
-            child: Center(
-              child: iconWidget ?? Icon(icon, color: brandBlue, size: 20),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
                     style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                ),
-              ],
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: ink,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      height: 1.25,
+                      color: inkMuted,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (canEdit)
-            IconButton(
-              tooltip: editTooltip,
-              visualDensity: VisualDensity.compact,
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined, color: brandBlue, size: 20),
-            ),
-          if (canDelete)
-            IconButton(
-              tooltip: deleteTooltip,
-              visualDensity: VisualDensity.compact,
-              onPressed: c.deleteSelected,
-              icon: const Icon(Icons.delete_outline,
-                  color: Color(0xFFB42318), size: 20),
-            ),
-        ],
+            if (canEdit)
+              IconButton(
+                tooltip: editTooltip,
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, color: brandBlue),
+              ),
+            if (canDelete)
+              IconButton(
+                tooltip: deleteTooltip,
+                onPressed: c.deleteSelected,
+                icon: const Icon(Icons.delete_outline, color: danger),
+              ),
+          ],
+        ),
       ),
     );
   }

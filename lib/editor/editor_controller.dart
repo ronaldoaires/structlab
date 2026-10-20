@@ -49,6 +49,11 @@ class EditorController extends ChangeNotifier {
   // Drawing aids.
   bool snapEnabled = true;
   bool orthoEnabled = true;
+  // View (zoom and pan). [pan] is in screen px, relative to the canvas center.
+  static const double minZoom = 0.4;
+  static const double maxZoom = 5.0;
+  double zoom = 1.0;
+  Offset pan = Offset.zero;
 
   // Beam in progress.
   Offset? pendingBeamStart;
@@ -57,6 +62,7 @@ class EditorController extends ChangeNotifier {
   // Types chosen in the Support and Load menus.
   SupportType supportType = SupportType.pin;
   LoadKind loadKind = LoadKind.concentrated;
+  NodeKind nodeKind = NodeKind.rigid;
   int? pendingLoadNodeId;
 
   // Gesture tracking.
@@ -150,6 +156,39 @@ class EditorController extends ChangeNotifier {
   Offset _snapPoint(Offset p) {
     if (!snapEnabled) return p;
     return Offset(snapValue(p.dx), snapValue(p.dy));
+  }
+
+    /// Public snap (grid) for a model point.
+  Offset snapPosition(Offset p) => _snapPoint(p);
+
+  /// Pixels per meter at the current zoom.
+  double get pxPerMeter => pixelsPerMeter * zoom;
+
+  /// Converts a touch tolerance in meters (at zoom 1) to the current zoom, so
+  /// the touch area stays the same size on screen.
+  double tol(double meters) => meters / zoom;
+
+  /// Moves/zooms the view. [prevFocal] and [focal] are the gesture center
+  /// before and after; [scaleFactor] multiplies the zoom. The model point
+  /// under the fingers stays under the fingers.
+  void navigate({
+    required Offset prevFocal,
+    required Offset focal,
+    required double scaleFactor,
+    required Size size,
+  }) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final oldScale = pxPerMeter;
+    final anchor = (prevFocal - center - pan) / oldScale;
+    zoom = (zoom * scaleFactor).clamp(minZoom, maxZoom).toDouble();
+    pan = focal - center - anchor * pxPerMeter;
+    notifyListeners();
+  }
+
+  void resetView() {
+    zoom = 1.0;
+    pan = Offset.zero;
+    notifyListeners();
   }
 
   /// First point: snaps to an existing node, otherwise to the grid.
@@ -286,6 +325,11 @@ class EditorController extends ChangeNotifier {
     status(msgSupportChosen(type));
   }
 
+  void setNodeKind(NodeKind kind) {
+    nodeKind = kind;
+    status(nodeKindHint(kind));
+  }
+
   void setLoadKind(LoadKind kind) {
     loadKind = kind;
     pendingLoadNodeId = null;
@@ -326,8 +370,12 @@ class EditorController extends ChangeNotifier {
     final load = selectedLoad;
     if (load == null) return false;
     if (load.kind == LoadKind.concentrated &&
-        concentratedConflict(model.loads, load.nodeId, angleDegrees,
-            ignoreId: load.id)) {
+        concentratedConflict(
+          model.loads,
+          load.nodeId,
+          angleDegrees,
+          ignoreId: load.id,
+        )) {
       message(msgLoadDirectionTaken);
       return false;
     }
@@ -365,8 +413,9 @@ class EditorController extends ChangeNotifier {
         model.loads.removeWhere((e) => e.id == id);
         break;
       case SelectedType.node:
-        model.members
-            .removeWhere((e) => e.startNodeId == id || e.endNodeId == id);
+        model.members.removeWhere(
+          (e) => e.startNodeId == id || e.endNodeId == id,
+        );
         model.supports.removeWhere((e) => e.nodeId == id);
         model.loads.removeWhere((e) => e.nodeId == id || e.endNodeId == id);
         model.nodes.removeWhere((e) => e.id == id);

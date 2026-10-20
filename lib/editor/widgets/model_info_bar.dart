@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/editor/editor_controller.dart';
 import 'package:structlab/l10n/strings_pt.dart';
 
-/// Row above the canvas: snap/ortho toggles and the unit badge.
+/// Chips floating over the top of the canvas: snap/ortho toggles, reset view
+/// and units.
 class ModelInfoBar extends StatelessWidget {
   const ModelInfoBar({super.key, required this.controller});
 
@@ -11,47 +13,57 @@ class ModelInfoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
       child: Row(
         children: [
-          const Icon(Icons.grid_4x4, size: 16, color: Color(0xFF64748B)),
-          const SizedBox(width: 6),
-          const Text(
-            model2dLabel,
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(width: 12),
           FilterChip(
-            label: const Text(snapLabel, style: TextStyle(fontSize: 11)),
+            label: const Text(snapLabel),
+            avatar: const Icon(Icons.grid_4x4, size: 16),
             selected: controller.snapEnabled,
-            visualDensity: VisualDensity.compact,
             onSelected: controller.setSnap,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           FilterChip(
-            label: const Text(orthoLabel, style: TextStyle(fontSize: 11)),
+            label: const Text(orthoLabel),
+            avatar: const Icon(Icons.straighten, size: 16),
             selected: controller.orthoEnabled,
-            visualDensity: VisualDensity.compact,
             onSelected: controller.setOrtho,
           ),
           const Spacer(),
+          Tooltip(
+            message: resetViewTooltip,
+            child: Material(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(color: lineColor),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: controller.resetView,
+                child: const SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: Icon(Icons.center_focus_strong_outlined,
+                      size: 20, color: ink),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              border: Border.all(color: lineColor),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Text(
               unitsLabel,
               style: TextStyle(
-                color: Color(0xFF334155),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+                color: ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

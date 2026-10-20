@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+/// Kind of node. [hinge] is reserved for a future step (releases rotation).
+enum NodeKind { rigid, hinge }
+
 /// A point of the structure where members, supports and loads connect.
 class StructuralNode {
   StructuralNode({

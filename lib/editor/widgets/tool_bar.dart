@@ -3,7 +3,7 @@ import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/editor/editor_controller.dart';
 import 'package:structlab/editor/tools/editor_tool.dart';
 
-/// Bottom toolbar, generated from the controller's list of tools.
+/// Floating pill toolbar, generated from the controller's list of tools.
 class EditorToolBar extends StatelessWidget {
   const EditorToolBar({super.key, required this.controller});
 
@@ -16,34 +16,36 @@ class EditorToolBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-      ),
-      child: Row(
-        children: [
-          for (final tool in controller.tools) _button(context, tool),
-        ],
+    return Material(
+      color: Colors.white,
+      elevation: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.3),
+      borderRadius: BorderRadius.circular(24),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Row(
+          children: [
+            for (final tool in controller.tools) _button(context, tool),
+          ],
+        ),
       ),
     );
   }
 
   Widget _button(BuildContext context, EditorToolHandler tool) {
     final isActive = controller.activeTool == tool.id;
-    final color = isActive ? brandBlue : const Color(0xFF64748B);
+    final color = isActive ? brandBlue : inkMuted;
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Material(
-          color: isActive ? const Color(0xFFE8EEFF) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isActive ? brandTint : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(18),
             onTap: () => _onToolTap(context, tool),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 1),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -53,16 +55,26 @@ class EditorToolBar extends StatelessWidget {
                     child: Center(child: tool.icon(controller, color)),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    tool.label(controller),
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isActive ? brandBlue : const Color(0xFF475569),
-                      fontSize: 10,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          tool.label(controller),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 11.5,
+                            fontWeight:
+                                isActive ? FontWeight.w700 : FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (tool.hasMenu)
+                        Icon(Icons.arrow_drop_down, size: 14, color: color),
+                    ],
                   ),
                 ],
               ),

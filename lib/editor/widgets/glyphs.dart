@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/domain/models/load.dart';
 import 'package:structlab/domain/models/support.dart';
+import 'package:structlab/editor/painting/support_shapes.dart';
 
 /// Small drawn icon of a support type.
 class SupportGlyph extends StatelessWidget {
@@ -53,7 +54,10 @@ class _SupportGlyphPainter extends CustomPainter {
           stroke,
         );
         canvas.drawLine(
-            Offset(w * 0.12, h * 0.82), Offset(w * 0.88, h * 0.82), stroke);
+          Offset(w * 0.12, h * 0.82),
+          Offset(w * 0.88, h * 0.82),
+          stroke,
+        );
         break;
       case SupportType.roller:
         canvas.drawPath(
@@ -67,18 +71,18 @@ class _SupportGlyphPainter extends CustomPainter {
         canvas.drawCircle(Offset(w * 0.37, h * 0.70), w * 0.07, stroke);
         canvas.drawCircle(Offset(w * 0.63, h * 0.70), w * 0.07, stroke);
         canvas.drawLine(
-            Offset(w * 0.12, h * 0.86), Offset(w * 0.88, h * 0.86), stroke);
+          Offset(w * 0.12, h * 0.86),
+          Offset(w * 0.88, h * 0.86),
+          stroke,
+        );
         break;
       case SupportType.fixed:
-        canvas.drawLine(
-            Offset(w * 0.5, h * 0.08), Offset(w * 0.5, h * 0.40), stroke);
-        canvas.drawLine(
-            Offset(w * 0.12, h * 0.40), Offset(w * 0.88, h * 0.40), stroke);
-        for (var i = 0; i < 4; i++) {
-          final x = w * (0.22 + i * 0.19);
-          canvas.drawLine(
-              Offset(x + w * 0.10, h * 0.40), Offset(x, h * 0.62), stroke);
-        }
+        drawFixedSupportShape(
+          canvas,
+          Offset(w * 0.5, h * 0.12),
+          w / 30,
+          stroke,
+        );
         break;
     }
   }
@@ -131,9 +135,15 @@ class _LoadGlyphPainter extends CustomPainter {
     void arrow(double x, double tailY, double headY) {
       canvas.drawLine(Offset(x, tailY), Offset(x, headY), stroke);
       canvas.drawLine(
-          Offset(x, headY), Offset(x - w * 0.07, headY - h * 0.10), stroke);
+        Offset(x, headY),
+        Offset(x - w * 0.07, headY - h * 0.10),
+        stroke,
+      );
       canvas.drawLine(
-          Offset(x, headY), Offset(x + w * 0.07, headY - h * 0.10), stroke);
+        Offset(x, headY),
+        Offset(x + w * 0.07, headY - h * 0.10),
+        stroke,
+      );
     }
 
     canvas.drawLine(Offset(w * 0.08, baseY), Offset(w * 0.92, baseY), stroke);
