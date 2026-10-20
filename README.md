@@ -1,17 +1,25 @@
-# structlab
+# StructLab
 
-A new Flutter project.
+A mobile-first 2D structural modeling app for engineering students,
+educators and enthusiasts. Draw a structure, apply loads, and (soon) get
+reactions and internal-force diagrams with a step-by-step solution.
 
-## Getting Started
+## Highlights
+- Interactive canvas built with Flutter `CustomPainter` and raw pointer events
+- Drag or tap-tap beam drawing with grid snap and orthogonal lock
+- Supports (roller, pin, fixed) in any orientation
+- Concentrated, uniform, triangular and trapezoidal loads at any direction
+- Undo history, node placement along members, precise numeric editing
+- Dimension lines and load labels that follow member inclination
 
-This project is a starting point for a Flutter application.
+## Architecture
+Layered and UI-independent where it matters:
+- `domain/`: pure Dart models, rules and catalogs (JSON-serializable)
+- `editor/`: controller (`ChangeNotifier`), tools as pluggable classes,
+  painters and widgets
+- `l10n/`: all user-facing strings, ready for translation
+- Planned: `analysis/` (swappable solvers: beam, frame, truss),
+  `results/`, `services/` (storage, auth, subscription)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Status
+Prototype. The analysis engine is the next milestone.
