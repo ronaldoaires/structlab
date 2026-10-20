@@ -20,6 +20,8 @@ class StructuralCanvasPainter extends CustomPainter {
     required this.previewEnd,
     required this.pendingLoadNodeId,
     required this.modelToScreen,
+    this.flaggedNodeIds = const {},
+    this.flaggedMemberIds = const {},
   });
 
   final StructuralModel model;
@@ -29,6 +31,8 @@ class StructuralCanvasPainter extends CustomPainter {
   final Offset? previewEnd;
   final int? pendingLoadNodeId;
   final Offset Function(Offset) modelToScreen;
+  final Set<int> flaggedNodeIds;
+  final Set<int> flaggedMemberIds;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -39,6 +43,8 @@ class StructuralCanvasPainter extends CustomPainter {
       toScreen: modelToScreen,
       selectedType: selectedType,
       selectedId: selectedId,
+      flaggedNodeIds: flaggedNodeIds,
+      flaggedMemberIds: flaggedMemberIds,
     );
 
     // Where the model origin is on screen and how many px a meter takes.

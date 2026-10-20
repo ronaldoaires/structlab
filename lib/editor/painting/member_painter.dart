@@ -11,6 +11,17 @@ void drawMembers(Canvas canvas, PaintContext ctx) {
     final start = ctx.toScreen(startNode.position);
     final end = ctx.toScreen(endNode.position);
     final selected = ctx.isSelected(SelectedType.member, member.id);
+
+    if (ctx.flaggedMemberIds.contains(member.id)) {
+      canvas.drawLine(
+        start,
+        end,
+        Paint()
+          ..color = flagColor.withValues(alpha: 0.4)
+          ..strokeWidth = 14
+          ..strokeCap = StrokeCap.round,
+      );
+    }
     if (selected) {
       canvas.drawLine(
         start,
@@ -36,6 +47,17 @@ void drawNodes(Canvas canvas, PaintContext ctx) {
   for (final node in ctx.model.nodes) {
     final point = ctx.toScreen(node.position);
     final selected = ctx.isSelected(SelectedType.node, node.id);
+
+    if (ctx.flaggedNodeIds.contains(node.id)) {
+      canvas.drawCircle(
+        point,
+        13,
+        Paint()
+          ..color = flagColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+    }
     canvas.drawCircle(
       point,
       selected ? 6 : 4.5,

@@ -23,14 +23,16 @@ import 'package:structlab/editor/tools/support_tool.dart';
 import 'package:structlab/l10n/strings_pt.dart';
 import 'package:structlab/services/entitlements.dart';
 import 'package:structlab/services/project_repository.dart';
+import 'package:structlab/domain/validation/structure_validator.dart';
+import 'package:structlab/domain/validation/validation_report.dart';
 
 /// Holds the editor state (model, undo, selection, active tool, current
 /// project) and the actions that change it. Knows nothing about widgets or
 /// dialogs.
 class EditorController extends ChangeNotifier {
   EditorController({ProjectRepository? repo, Entitlements? entitlements})
-      : repo = repo ?? ProjectRepository(),
-        entitlements = entitlements ?? const Entitlements();
+    : repo = repo ?? ProjectRepository(),
+      entitlements = entitlements ?? const Entitlements();
 
   final ProjectRepository repo;
   final Entitlements entitlements;
@@ -52,6 +54,12 @@ class EditorController extends ChangeNotifier {
 
   /// Set by the screen: opens the edit dialog of the current selection.
   VoidCallback? onEditRequested;
+
+  /// Set by the screen: shows the validation report.
+  void Function(ValidationReport report)? onValidated;
+
+  /// Last validation. Cleared as soon as the model changes.
+  ValidationReport? report;
 
   EditorTool activeTool = EditorTool.select;
   SelectedType selectedType = SelectedType.none;
@@ -221,7 +229,8 @@ class EditorController extends ChangeNotifier {
     }
     if (model.isEmpty && projectId == null) return;
 
-    final json = model.toJson(); // snapshot: safe even if the user keeps editing
+    final json = model
+        .toJson(); // snapshot: safe even if the user keeps editing
     if (projectId != null && _keyFor(projectName, json) == _lastSavedKey) {
       return;
     }
@@ -423,11 +432,13 @@ class EditorController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   void saveUndo() {
+    report = null;
     _undoStack.add(model.copy());
     if (_undoStack.length > 50) _undoStack.removeAt(0);
   }
 
   void _resetTransient() {
+    report = null;
     pendingBeamStart = null;
     previewEnd = null;
     pendingLoadNodeId = null;
@@ -445,15 +456,10 @@ class EditorController extends ChangeNotifier {
   }
 
   void validateModel() {
-    if (model.members.isEmpty) {
-      message(msgNeedBeam);
-      return;
-    }
-    if (model.supports.isEmpty) {
-      message(msgNeedSupport);
-      return;
-    }
-    message(msgModelOk);
+    final result = validateStructure(model);
+    report = result;
+    notifyListeners(); // repaints with the highlights
+    onValidated?.call(result);
   }
 
   StructuralNode findOrCreateNode(Offset position) {
@@ -558,8 +564,12 @@ class EditorController extends ChangeNotifier {
     final load = selectedLoad;
     if (load == null) return false;
     if (load.kind == LoadKind.concentrated &&
-        concentratedConflict(model.loads, load.nodeId, angleDegrees,
-            ignoreId: load.id)) {
+        concentratedConflict(
+          model.loads,
+          load.nodeId,
+          angleDegrees,
+          ignoreId: load.id,
+        )) {
       message(msgLoadDirectionTaken);
       return false;
     }
@@ -597,8 +607,9 @@ class EditorController extends ChangeNotifier {
         model.loads.removeWhere((e) => e.id == id);
         break;
       case SelectedType.node:
-        model.members
-            .removeWhere((e) => e.startNodeId == id || e.endNodeId == id);
+        model.members.removeWhere(
+          (e) => e.startNodeId == id || e.endNodeId == id,
+        );
         model.supports.removeWhere((e) => e.nodeId == id);
         model.loads.removeWhere((e) => e.nodeId == id || e.endNodeId == id);
         model.nodes.removeWhere((e) => e.id == id);

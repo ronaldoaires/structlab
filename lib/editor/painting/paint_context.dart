@@ -10,6 +10,8 @@ class PaintContext {
     required this.toScreen,
     required this.selectedType,
     required this.selectedId,
+    this.flaggedNodeIds = const {},
+    this.flaggedMemberIds = const {},
   });
 
   final StructuralModel model;
@@ -18,6 +20,10 @@ class PaintContext {
   final Offset Function(Offset) toScreen;
   final SelectedType selectedType;
   final int? selectedId;
+
+  /// Elements flagged by the validation (drawn with a highlight).
+  final Set<int> flaggedNodeIds;
+  final Set<int> flaggedMemberIds;
 
   bool isSelected(SelectedType type, int id) =>
       selectedType == type && selectedId == id;

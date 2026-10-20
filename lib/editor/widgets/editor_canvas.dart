@@ -124,6 +124,8 @@ class _EditorCanvasState extends State<EditorCanvas> {
               previewEnd: c.previewEnd,
               pendingLoadNodeId: c.pendingLoadNodeId,
               modelToScreen: (point) => _modelToScreen(point, size),
+              flaggedNodeIds: c.report?.flaggedNodeIds ?? const {},
+              flaggedMemberIds: c.report?.flaggedMemberIds ?? const {},
             ),
             child: const SizedBox.expand(),
           ),

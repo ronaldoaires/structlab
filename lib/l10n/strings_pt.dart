@@ -1,6 +1,7 @@
 import 'package:structlab/domain/models/load.dart';
 import 'package:structlab/domain/models/support.dart';
 import 'package:structlab/domain/models/node.dart';
+import 'package:structlab/domain/validation/validation_report.dart';
 
 // All user-facing texts (Portuguese) for supports and loads.
 
@@ -313,8 +314,7 @@ const String projectsEmpty =
     'Nenhum projeto salvo ainda. Desenhe algo e ele será salvo automaticamente.';
 const String msgProjectLoadFailed = 'Não foi possível abrir o projeto.';
 
-String projectsCount(int n, int max) =>
-    '$n de $max projetos';
+String projectsCount(int n, int max) => '$n de $max projetos';
 
 String projectEditedAt(DateTime d) {
   String two(int n) => n.toString().padLeft(2, '0');
@@ -330,3 +330,71 @@ String msgProjectOpened(String name) => 'Projeto "$name" aberto.';
 
 String msgProjectLimit(int max) =>
     'Limite de $max projetos atingido. Exclua um projeto para criar outro.';
+
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+const String validationOkTitle = 'Modelo pronto para calcular';
+const String validationFailTitle = 'O modelo ainda não pode ser calculado';
+const String validationIssuesHeader = 'PROBLEMAS ENCONTRADOS';
+const String validationNextStep =
+    'O motor de cálculo será a próxima etapa do app.';
+const String closeLabel = 'Fechar';
+
+String validationCounts(int errors, int warnings) {
+  if (errors == 0 && warnings == 0) return 'Nenhum problema encontrado.';
+  final parts = <String>[
+    if (errors > 0) '$errors ${errors == 1 ? 'erro' : 'erros'}',
+    if (warnings > 0) '$warnings ${warnings == 1 ? 'aviso' : 'avisos'}',
+  ];
+  return parts.join(' · ');
+}
+
+String staticityTitle(ValidationReport r) => switch (r.staticity) {
+  Staticity.isostatic => 'Estrutura isostática',
+  Staticity.hyperstatic => 'Estrutura hiperestática (grau ${r.degree})',
+  Staticity.hypostatic => 'Estrutura hipostática',
+  Staticity.unknown => 'Estaticidade não avaliada',
+};
+
+String staticityBody(ValidationReport r) => switch (r.staticity) {
+  Staticity.isostatic =>
+    'Tem ${r.reactions} reações e 3 equações de equilíbrio. A solução é única e sai só pelo equilíbrio.',
+  Staticity.hyperstatic =>
+    'Há ${r.degree} ${r.degree == 1 ? 'incógnita' : 'incógnitas'} a mais do que as equações de equilíbrio. Será preciso o método da rigidez (EI e EA).',
+  Staticity.hypostatic => 'A estrutura não está totalmente travada: ela pode se mover como um mecanismo e não tem solução por equilíbrio.',
+  Staticity.unknown =>
+    'Corrija os problemas abaixo para a estrutura poder ser classificada.',
+};
+
+String issueTitle(ValidationIssue i) => switch (i.code) {
+  IssueCode.noMembers => 'Nenhuma barra desenhada',
+  IssueCode.noSupports => 'Estrutura sem apoios',
+  IssueCode.noLoads => 'Nenhuma carga aplicada',
+  IssueCode.looseNode => 'Nó solto',
+  IssueCode.disconnected => 'Estrutura em ${i.args.first} partes separadas',
+  IssueCode.hypostaticCount => 'Reações insuficientes',
+  IssueCode.unstableGeometry => 'Apoios mal posicionados (instável)',
+  IssueCode.invalidDistributedLoad => 'Carga distribuída inválida',
+  IssueCode.zeroLoad => 'Carga com intensidade zero',
+  IssueCode.crossingMembers => 'Barras se cruzam sem nó',
+  IssueCode.nodeOnMember => 'Nó sobre uma barra sem dividi-la',
+};
+
+String issueTip(ValidationIssue i) => switch (i.code) {
+  IssueCode.noMembers => 'Use a ferramenta Barra para desenhar a estrutura.',
+  IssueCode.noSupports =>
+    'Sem apoios a estrutura flutua. Use a ferramenta Apoio e toque em um nó.',
+  IssueCode.noLoads => 'Dá para calcular, mas todos os esforços serão zero. Adicione uma carga com a ferramenta Carga.',
+  IssueCode.looseNode => 'Nenhuma barra chega a este nó, então apoios e cargas nele não fazem efeito. Exclua o nó ou ligue uma barra a ele.',
+  IssueCode.disconnected => 'Todas as barras precisam estar ligadas pelos nós. As barras destacadas não se conectam ao resto. Una as pontas ou redesenhe passando por um nó em comum.',
+  IssueCode.hypostaticCount =>
+    'Tem ${i.args.first} ${i.args.first == 1 ? 'reação' : 'reações'} e são necessárias pelo menos 3 (duas forças e um momento). Troque um apoio móvel por articulado, adicione outro apoio ou use um engaste.',
+  IssueCode.unstableGeometry => 'Há reações suficientes, mas as direções delas não impedem todos os movimentos: são paralelas ou se cruzam em um único ponto. Por exemplo, só apoios verticais não seguram a estrutura na horizontal. Mude o tipo ou a posição de um apoio.',
+  IssueCode.invalidDistributedLoad => 'Os dois nós da carga precisam estar na mesma reta de barras. Mova os nós de volta ou exclua a carga.',
+  IssueCode.zeroLoad =>
+    'Esta carga não produz efeito. Edite o valor ou exclua.',
+  IssueCode.crossingMembers => 'As barras se cruzam, mas não estão ligadas entre si. O cálculo não trata esse cruzamento como uma junta.',
+  IssueCode.nodeOnMember => 'O nó está em cima da barra, mas não a divide, então não há ligação. Redesenhe a barra em dois trechos terminando neste nó (a ferramenta Nó já cria o nó dividindo a barra).',
+};

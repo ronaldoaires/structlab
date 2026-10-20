@@ -15,3 +15,9 @@ const Color lineColor = Color(0xFFE2E8F0);
 const Color brandTint = Color(0xFFE8EEFF);
 
 const Color danger = Color(0xFFB42318);
+
+const Color success = Color(0xFF15803D);
+const Color warning = Color(0xFFB45309);
+
+/// Halo drawn on the canvas around elements flagged by the validation.
+const Color flagColor = Color(0xFFF59E0B);

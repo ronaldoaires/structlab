@@ -8,6 +8,8 @@ import 'package:structlab/editor/widgets/model_info_bar.dart';
 import 'package:structlab/editor/widgets/properties_panel.dart';
 import 'package:structlab/editor/widgets/status_bar.dart';
 import 'package:structlab/editor/widgets/tool_bar.dart';
+import 'package:structlab/domain/validation/validation_report.dart';
+import 'package:structlab/editor/widgets/validation_sheet.dart';
 
 /// The editor screen: full-bleed canvas with floating controls on top.
 class EditorScreen extends StatefulWidget {
@@ -27,6 +29,7 @@ class _EditorScreenState extends State<EditorScreen>
     WidgetsBinding.instance.addObserver(this);
     _c.onMessage = _showMessage;
     _c.onEditRequested = _edit;
+    _c.onValidated = _showValidation;
     _c.init();
   }
 
@@ -49,16 +52,23 @@ class _EditorScreenState extends State<EditorScreen>
 
   void _edit() => editSelected(context, _c);
 
+  void _showValidation(ValidationReport report) {
+    if (!mounted) return;
+    showValidationSheet(context, report);
+  }
+
   void _showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(message),
-        // Keeps the message above the floating toolbar.
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 140),
-        duration: const Duration(seconds: 2),
-      ));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          // Keeps the message above the floating toolbar.
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 140),
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 
   @override
