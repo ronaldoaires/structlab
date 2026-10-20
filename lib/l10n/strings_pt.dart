@@ -16,7 +16,7 @@ const String appLegalese = 'Ferramenta inicial de modelagem estrutural 2D.';
 
 const String undoTooltip = 'Desfazer';
 const String moreOptionsTooltip = 'Mais opções';
-const String menuNewModel = 'Novo modelo';
+const String menuNewModel = 'Novo projeto';
 const String menuAbout = 'Sobre o aplicativo';
 
 const String model2dLabel = 'MODELO 2D';
@@ -294,3 +294,39 @@ const String resetViewTooltip = 'Centralizar vista';
 const String msgNodeMoved = 'Nó movido.';
 const String msgNodeMoveBlocked =
     'Esse movimento desalinharia uma carga distribuída ou sobreporia outro nó.';
+
+// ---------------------------------------------------------------------------
+// Projects
+// ---------------------------------------------------------------------------
+
+const String menuProjects = 'Meus projetos';
+const String projectsTitle = 'Meus projetos';
+const String projectDefaultName = 'Novo projeto';
+const String newProjectLabel = 'Novo projeto';
+const String projectOpenLabel = 'Aberto';
+const String renameLabel = 'Renomear';
+const String deleteLabel = 'Excluir';
+const String renameProjectTitle = 'Renomear projeto';
+const String projectNameLabel = 'Nome do projeto';
+const String deleteProjectTitle = 'Excluir projeto?';
+const String projectsEmpty =
+    'Nenhum projeto salvo ainda. Desenhe algo e ele será salvo automaticamente.';
+const String msgProjectLoadFailed = 'Não foi possível abrir o projeto.';
+
+String projectsCount(int n, int max) =>
+    '$n de $max projetos';
+
+String projectEditedAt(DateTime d) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  return 'Editado em ${two(d.day)}/${two(d.month)}/${d.year} às ${two(d.hour)}:${two(d.minute)}';
+}
+
+String deleteProjectBody(String name) =>
+    'O projeto "$name" será excluído permanentemente.';
+
+String msgProjectAutoName(int n) => 'Projeto $n';
+
+String msgProjectOpened(String name) => 'Projeto "$name" aberto.';
+
+String msgProjectLimit(int max) =>
+    'Limite de $max projetos atingido. Exclua um projeto para criar outro.';
