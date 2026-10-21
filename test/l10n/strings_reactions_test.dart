@@ -28,19 +28,21 @@ StructuralModel _beam() => StructuralModel()
   ])
   ..loads.addAll([
     StructuralLoad(
-        id: 8,
-        kind: LoadKind.concentrated,
-        nodeId: 2,
-        q1: 10,
-        angleDegrees: -90),
+      id: 8,
+      kind: LoadKind.concentrated,
+      nodeId: 2,
+      q1: 10,
+      angleDegrees: -90,
+    ),
     StructuralLoad(
-        id: 9,
-        kind: LoadKind.uniform,
-        nodeId: 1,
-        endNodeId: 3,
-        q1: 5,
-        q2: 5,
-        angleDegrees: -90),
+      id: 9,
+      kind: LoadKind.uniform,
+      nodeId: 1,
+      endNodeId: 3,
+      q1: 5,
+      q2: 5,
+      angleDegrees: -90,
+    ),
   ]);
 
 void main() {
@@ -73,8 +75,7 @@ void main() {
     expect(lines[2].value, isNull);
 
     expect(equationSumLine(eqs[0], labels, c), '4 · VC − 50 = 0');
-    expect(equationResultLine(eqs[0], labels, c),
-        'VC = 50 / 4 = 12.5 kN ↑');
+    expect(equationResultLine(eqs[0], labels, c), 'VC = 50 / 4 = 12.5 kN ↑');
   });
 
   test('ΣFy and ΣFx lines', () {
@@ -96,8 +97,10 @@ void main() {
     expect(checkSumLine(check, c).endsWith('✓'), isTrue);
 
     final summary = steps.whereType<SummaryStep>().single;
-    expect(reactionSummaryLine(summary.reactions[1], labels, c),
-        'VA = 17.5 kN ↑');
+    expect(
+      reactionSummaryLine(summary.reactions[1], labels, c),
+      'VA = 17.5 kN ↑',
+    );
   });
 
   test('negative value is explained as opposite sense', () {
@@ -108,15 +111,21 @@ void main() {
       kind: ReactionKind.fy,
       value: -2,
     );
-    expect(reactionSummaryLine(r, labels, c),
-        'VC = −2 kN ↓ (sentido contrário ao adotado)');
+    // In 'negative value is explained as opposite sense':
+    expect(
+      reactionSummaryLine(r, labels, c),
+      'VC = −2 kN → sentido contrário ao adotado: 2 kN ↓',
+    );
   });
 
   test('flipped convention changes the shown sign only', () {
     const flipped = SignConvention(ySign: -1);
     final r = solution.reactions[1]; // Ay = +17.5 internal (up)
-    expect(reactionSummaryLine(r.copyWithValue(17.5), labels, flipped),
-        'VA = −17.5 kN ↑ (sentido contrário ao adotado)');
+    // In 'flipped convention changes the shown sign only':
+    expect(
+      reactionSummaryLine(r.copyWithValue(17.5), labels, flipped),
+      'VA = −17.5 kN → sentido contrário ao adotado: 17.5 kN ↑',
+    );
   });
 
   test('solver failures have a message', () {
@@ -128,10 +137,10 @@ void main() {
 
 extension on Reaction {
   Reaction copyWithValue(double v) => Reaction(
-        supportId: supportId,
-        nodeId: nodeId,
-        point: point,
-        kind: kind,
-        value: v,
-      );
+    supportId: supportId,
+    nodeId: nodeId,
+    point: point,
+    kind: kind,
+    value: v,
+  );
 }

@@ -304,13 +304,20 @@ String checkSumLine(CheckStep s, SignConvention c) {
   return buf.toString();
 }
 
-/// "Ay = 17.50 kN ↑". Negative values get the "opposite sense" note.
+/// "VA = 17.5 kN ↑". A negative value explains the real direction:
+/// "VD = −4 kN → sentido contrário ao adotado: 4 kN ↓".
 String reactionSummaryLine(Reaction r, ModelLabels l, SignConvention c) {
   final shown = (_compSign(c, r.kind) * r.value).toDouble();
   final arrow = reactionArrow(r.kind, r.value);
-  final note = shown < -1e-9 ? ' (sentido contrário ao adotado)' : '';
-  return '${reactionName(r, l)} = ${_f(shown)} ${reactionUnit(r.kind)}'
-      '${arrow.isEmpty ? '' : ' $arrow'}$note';
+  final unit = reactionUnit(r.kind);
+  final arrowPart = arrow.isEmpty ? '' : ' $arrow';
+  final name = reactionName(r, l);
+
+  if (shown < -1e-9) {
+    return '$name = ${_f(shown)} $unit → '
+        'sentido contrário ao adotado: ${_f(shown.abs())} $unit$arrowPart';
+  }
+  return '$name = ${_f(shown)} $unit$arrowPart';
 }
 
 // ---------------------------------------------------------------------------

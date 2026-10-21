@@ -26,7 +26,10 @@ void drawSupports(Canvas canvas, PaintContext ctx) {
 
     if (support.type == SupportType.fixed) {
       drawFixedSupportShape(canvas, point, 1, paint);
+    } else if (support.type == SupportType.pin) {
+      drawPinSupportShape(canvas, point, 1, paint, fill: fill);
     } else {
+      // Roller.
       final path = Path()
         ..moveTo(point.dx, point.dy + 2)
         ..lineTo(point.dx - 12, point.dy + 20)
@@ -34,21 +37,13 @@ void drawSupports(Canvas canvas, PaintContext ctx) {
         ..close();
       canvas.drawPath(path, fill);
       canvas.drawPath(path, paint);
-      if (support.type == SupportType.roller) {
-        canvas.drawCircle(point + const Offset(-5, 23), 2.5, paint);
-        canvas.drawCircle(point + const Offset(5, 23), 2.5, paint);
-        canvas.drawLine(
-          point + const Offset(-15, 27),
-          point + const Offset(15, 27),
-          paint,
-        );
-      } else {
-        canvas.drawLine(
-          point + const Offset(-15, 25),
-          point + const Offset(15, 25),
-          paint,
-        );
-      }
+      canvas.drawCircle(point + const Offset(-5, 23), 2.5, paint);
+      canvas.drawCircle(point + const Offset(5, 23), 2.5, paint);
+      canvas.drawLine(
+        point + const Offset(-15, 27),
+        point + const Offset(15, 27),
+        paint,
+      );
     }
     canvas.restore();
   }

@@ -27,3 +27,41 @@ void drawFixedSupportShape(
     canvas.drawLine(p(x, stem), p(x + hatchDx, stem + hatchDy), stroke);
   }
 }
+
+/// Single drawing of the pin support (apoio de segundo gênero), in the
+/// FTool style: triangle sitting on a base line with hatch marks below.
+///
+/// [origin] is the node point (apex). The shape grows downward and is scaled
+/// by [unit] (1 = canvas pixels). When [fill] is given, the triangle is
+/// filled before being stroked.
+void drawPinSupportShape(
+  Canvas canvas,
+  Offset origin,
+  double unit,
+  Paint stroke, {
+  Paint? fill,
+}) {
+  const apexGap = 2.0; // small gap between the node and the apex
+  const height = 20.0; // node -> base line
+  const triHalf = 12.0; // half width of the triangle base
+  const lineHalf = 15.0; // half width of the base line
+  const hatchDx = -4.0;
+  const hatchDy = 7.0;
+
+  Offset p(double x, double y) => origin + Offset(x * unit, y * unit);
+
+  final triangle = Path()
+    ..moveTo(p(0, apexGap).dx, p(0, apexGap).dy)
+    ..lineTo(p(-triHalf, height).dx, p(-triHalf, height).dy)
+    ..lineTo(p(triHalf, height).dx, p(triHalf, height).dy)
+    ..close();
+  if (fill != null) canvas.drawPath(triangle, fill);
+  canvas.drawPath(triangle, stroke);
+
+  // Base line.
+  canvas.drawLine(p(-lineHalf, height), p(lineHalf, height), stroke);
+  // 5 hatch marks.
+  for (final x in const [-12.0, -6.0, 0.0, 6.0, 12.0]) {
+    canvas.drawLine(p(x, height), p(x + hatchDx, height + hatchDy), stroke);
+  }
+}

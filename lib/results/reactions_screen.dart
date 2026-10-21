@@ -51,11 +51,8 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => StepsScreen(
-          steps: steps,
-          labels: _labels,
-          convention: _convention,
-        ),
+        builder: (_) =>
+            StepsScreen(steps: steps, labels: _labels, convention: _convention),
       ),
     );
   }
@@ -83,7 +80,10 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
               const Text(
                 stepsSubscribersTitle,
                 style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800, color: ink),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: ink,
+                ),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -122,7 +122,11 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: solution == null
-                ? [_FailureCard(message: solveFailureMessage(_outcome.failure!))]
+                ? [
+                    _FailureCard(
+                      message: solveFailureMessage(_outcome.failure!),
+                    ),
+                  ]
                 : [
                     _ReactionsCard(
                       reactions: solution.reactions,
@@ -147,13 +151,17 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
                         height: 56,
                         child: FilledButton.icon(
                           onPressed: _openSteps,
-                          icon: Icon(canSee
-                              ? Icons.format_list_numbered
-                              : Icons.lock_outline),
+                          icon: Icon(
+                            canSee
+                                ? Icons.format_list_numbered
+                                : Icons.lock_outline,
+                          ),
                           label: const Text(seeStepsLabel),
                           style: FilledButton.styleFrom(
                             textStyle: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w800),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
@@ -173,10 +181,10 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
 }
 
 double _shown(Reaction r, SignConvention c) => switch (r.kind) {
-      ReactionKind.fx => c.x(r.value),
-      ReactionKind.fy => c.y(r.value),
-      ReactionKind.moment => c.moment(r.value),
-    };
+  ReactionKind.fx => c.x(r.value),
+  ReactionKind.fy => c.y(r.value),
+  ReactionKind.moment => c.moment(r.value),
+};
 
 class _ReactionsCard extends StatelessWidget {
   const _ReactionsCard({
@@ -203,7 +211,10 @@ class _ReactionsCard extends StatelessWidget {
           const Text(
             reactionsCardTitle,
             style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w800, color: ink),
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: ink,
+            ),
           ),
           const SizedBox(height: 10),
           for (final r in reactions)
@@ -222,18 +233,22 @@ class _ReactionsCard extends StatelessWidget {
                       reactionName(r, labels),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w800, color: brandBlue),
+                        fontWeight: FontWeight.w800,
+                        color: brandBlue,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '${formatNumber(_shown(r, convention))} '
+                      // Magnitude only: the arrow already shows the real direction.
+                      '${formatNumber(_shown(r, convention).abs())} '
                       '${reactionUnit(r.kind)}',
                       style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: ink),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: ink,
+                      ),
                     ),
                   ),
                   Text(
@@ -274,7 +289,10 @@ class _DiagramPlaceholder extends StatelessWidget {
             child: Text(
               title,
               style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w700, color: ink),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: ink,
+              ),
             ),
           ),
           const Text(

@@ -46,17 +46,10 @@ class _SupportGlyphPainter extends CustomPainter {
 
     switch (type) {
       case SupportType.pin:
-        canvas.drawPath(
-          Path()
-            ..moveTo(w * 0.5, h * 0.18)
-            ..lineTo(w * 0.25, h * 0.70)
-            ..lineTo(w * 0.75, h * 0.70)
-            ..close(),
-          stroke,
-        );
-        canvas.drawLine(
-          Offset(w * 0.12, h * 0.82),
-          Offset(w * 0.88, h * 0.82),
+        drawPinSupportShape(
+          canvas,
+          Offset(w * 0.5, h * 0.1),
+          w / 34,
           stroke,
         );
         break;
