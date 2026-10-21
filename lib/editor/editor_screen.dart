@@ -10,6 +10,7 @@ import 'package:structlab/editor/widgets/status_bar.dart';
 import 'package:structlab/editor/widgets/tool_bar.dart';
 import 'package:structlab/domain/validation/validation_report.dart';
 import 'package:structlab/editor/widgets/validation_sheet.dart';
+import 'package:structlab/results/reactions_screen.dart';
 
 /// The editor screen: full-bleed canvas with floating controls on top.
 class EditorScreen extends StatefulWidget {
@@ -54,7 +55,22 @@ class _EditorScreenState extends State<EditorScreen>
 
   void _showValidation(ValidationReport report) {
     if (!mounted) return;
-    showValidationSheet(context, report);
+    showValidationSheet(context, report, onCalculate: _openResults);
+  }
+
+  /// Opens the results with a snapshot of the model, so editing later does
+  /// not change what the results screen shows.
+  void _openResults() {
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReactionsScreen(
+          model: _c.model.copy(),
+          entitlements: _c.entitlements,
+        ),
+      ),
+    );
   }
 
   void _showMessage(String message) {

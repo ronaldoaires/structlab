@@ -1,30 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:structlab/analysis/reactions/reaction_solver.dart';
 import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/domain/validation/validation_report.dart';
 import 'package:structlab/l10n/strings_pt.dart';
+import 'package:structlab/l10n/strings_reactions_pt.dart';
+import 'package:structlab/l10n/strings_results_pt.dart';
 
-/// Bottom sheet with the result of the validation.
-Future<void> showValidationSheet(BuildContext context, ValidationReport r) {
+/// Bottom sheet with the result of the validation. When the structure is
+/// statically determinate, it offers [onCalculate] (the reactions).
+Future<void> showValidationSheet(
+  BuildContext context,
+  ValidationReport r, {
+  VoidCallback? onCalculate,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     constraints: BoxConstraints(
       maxHeight: MediaQuery.of(context).size.height * 0.78,
     ),
-    builder: (context) => SafeArea(child: _SheetContent(report: r)),
+    builder: (context) => SafeArea(
+      child: _SheetContent(report: r, onCalculate: onCalculate),
+    ),
   );
 }
 
 class _SheetContent extends StatelessWidget {
-  const _SheetContent({required this.report});
+  const _SheetContent({required this.report, this.onCalculate});
 
   final ValidationReport report;
+  final VoidCallback? onCalculate;
 
   @override
   Widget build(BuildContext context) {
     final r = report;
     final ok = r.canSolve;
     final accent = ok ? success : danger;
+    // Only statically determinate structures go to the reactions solver.
+    final canCalculate =
+        ok && r.staticity == Staticity.isostatic && onCalculate != null;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
@@ -111,18 +125,38 @@ class _SheetContent extends StatelessWidget {
           ],
           if (ok) ...[
             const SizedBox(height: 14),
-            const Text(
-              validationNextStep,
-              style: TextStyle(fontSize: 13, color: inkMuted),
-            ),
+            if (canCalculate)
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    onCalculate!();
+                  },
+                  icon: const Icon(Icons.calculate_outlined, size: 20),
+                  label: const Text(calculateReactionsLabel),
+                ),
+              )
+            else
+              Text(
+                r.staticity == Staticity.hyperstatic
+                    ? solveFailureMessage(SolveFailure.hyperstatic)
+                    : validationNextStep,
+                style: const TextStyle(fontSize: 13, color: inkMuted),
+              ),
           ],
-          const SizedBox(height: 16),
+          SizedBox(height: canCalculate ? 8 : 16),
           SizedBox(
             width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(closeLabel),
-            ),
+            child: canCalculate
+                ? TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(closeLabel),
+                  )
+                : FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(closeLabel),
+                  ),
           ),
         ],
       ),
