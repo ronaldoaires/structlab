@@ -10,6 +10,8 @@ import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/l10n/strings_reactions_pt.dart';
 import 'package:structlab/l10n/strings_results_pt.dart';
 import 'package:structlab/results/widgets/load_shape_painter.dart';
+import 'package:structlab/results/load_formula.dart';
+import 'package:structlab/results/widgets/formula_view.dart';
 
 /// The step by step of the reactions, one step at a time.
 class StepsScreen extends StatefulWidget {
@@ -431,12 +433,65 @@ class _ResultBox extends StatelessWidget {
   }
 }
 
-/// Card of one distributed load: the figure, then the simple formulas.
+/// Card of one distributed load: the figure, then the formulas side by side
+/// (resultant on the left, CG on the right).
 class _EquivalentLoadCard extends StatelessWidget {
   const _EquivalentLoadCard({required this.load, required this.labels});
 
   final EquivalentLoad load;
   final ModelLabels labels;
+
+  Widget _columns(Widget left, Widget right) => IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: left),
+        const VerticalDivider(width: 24, thickness: 1, color: lineColor),
+        Expanded(child: right),
+      ],
+    ),
+  );
+
+  Widget _title(String text, {bool alignEnd = false}) => Text(
+    text,
+    textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+    style: const TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w800,
+      color: ink,
+    ),
+  );
+
+  Widget _symbolicColumn(String title, FormulaBlock block,
+      {bool alignEnd = false}) {
+    return Column(
+      crossAxisAlignment:
+          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        SizedBox(width: double.infinity, child: _title(title, alignEnd: alignEnd)),
+        const SizedBox(height: 8),
+        FormulaLineView(
+          line: block.symbolic,
+          color: brandBlue,
+          alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+        ),
+      ],
+    );
+  }
+
+  Widget _valuesColumn(FormulaBlock block, {bool alignEnd = false}) {
+    final alignment =
+        alignEnd ? Alignment.centerRight : Alignment.centerLeft;
+    return Column(
+      crossAxisAlignment:
+          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        FormulaLineView(line: block.substituted, alignment: alignment),
+        const SizedBox(height: 10),
+        FormulaLineView(line: block.result, bold: true, alignment: alignment),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -454,6 +509,7 @@ class _EquivalentLoadCard extends StatelessWidget {
             : (q('H', e.q1), q('h', e.q2)),
     };
 
+    final formulas = buildLoadFormulas(e);
     final from = equivalentCentroidFrom(e, labels);
 
     return _Card(
@@ -466,7 +522,7 @@ class _EquivalentLoadCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           SizedBox(
-            height: 130,
+            height: 216,
             child: CustomPaint(
               size: Size.infinite,
               painter: LoadShapePainter(
@@ -479,13 +535,40 @@ class _EquivalentLoadCard extends StatelessWidget {
                 rightSpanLabel: '${formatNumber(e.length - e.centroid)} m',
                 startLabel: labels.node(e.startNodeId),
                 endLabel: labels.node(e.endNodeId),
+                resultantLabel: resultantFigureLabel(e.resultant),
+                lengthLabel: spanLengthLabel(e.length),
               ),
             ),
           ),
           const Divider(height: 20, color: lineColor),
-          _Line(equivalentForceLine(e), mono: true, bold: true),
-          _Line(equivalentCentroidLine(e, labels), mono: true, bold: true),
-          if (from.isNotEmpty) _Line(from),
+          Center(
+            child: Text(
+              formulaShapeTitle(e.shape),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: ink,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _columns(
+            _symbolicColumn(formulaResultantTitle, formulas.resultant),
+            _symbolicColumn(formulaCentroidTitle, formulas.centroid,
+                alignEnd: true),
+          ),
+          const Divider(height: 24, color: lineColor),
+          _columns(
+            _valuesColumn(formulas.resultant),
+            _valuesColumn(formulas.centroid, alignEnd: true),
+          ),
+          if (from.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              from,
+              style: const TextStyle(fontSize: 12, color: inkMuted),
+            ),
+          ],
         ],
       ),
     );

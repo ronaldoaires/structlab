@@ -111,7 +111,7 @@ String reactionStepIntro(ReactionStep s, ModelLabels l) => switch (s) {
   NamesStep() =>
     'Cada nó recebe uma letra (A, B, C…) da esquerda para a direita. As barras levam o nome dos seus nós (AB, BC…).',
   EquivalentLoadsStep() =>
-    'Cada carga distribuída é trocada por uma única força, a resultante R, aplicada no centro de gravidade CG da carga.',
+    'Cada carga distribuída é trocada por uma única força, a resultante R, aplicada no centro de gravidade CG da geometria.',
   DecompositionStep() =>
     'Forças inclinadas são separadas em componente horizontal (Fx) e vertical (Fy) para entrar nas equações. O ângulo é medido a partir do eixo x, no sentido anti-horário.',
   UnknownsStep() =>
@@ -312,3 +312,20 @@ String reactionSummaryLine(Reaction r, ModelLabels l, SignConvention c) {
   return '${reactionName(r, l)} = ${_f(shown)} ${reactionUnit(r.kind)}'
       '${arrow.isEmpty ? '' : ' $arrow'}$note';
 }
+
+// ---------------------------------------------------------------------------
+// Equivalent load card (formulas)
+// ---------------------------------------------------------------------------
+
+const String formulaResultantTitle = 'Resultante';
+const String formulaCentroidTitle = 'Centro de gravidade';
+
+String formulaShapeTitle(LoadShape s) => switch (s) {
+  LoadShape.rectangle => 'Fórmula do retângulo',
+  LoadShape.triangle => 'Fórmula do triângulo',
+  LoadShape.trapezoid => 'Fórmula do trapézio',
+};
+
+String resultantFigureLabel(double r) => 'R = ${_f(r)} kN';
+
+String spanLengthLabel(double length) => 'L = ${_f(length)} m';
