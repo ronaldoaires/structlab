@@ -69,11 +69,11 @@ void main() {
       (tester) async {
     await tester.pumpWidget(_app(const Entitlements()));
     await _tapSteps(tester);
-    expect(find.text(stepCounter(1, 8)), findsOneWidget);
+    expect(find.text(stepCounter(1, 7)), findsOneWidget);
 
     await tester.tap(find.text(nextLabel));
     await tester.pumpAndSettle();
-    expect(find.text(stepCounter(2, 8)), findsOneWidget);
+    expect(find.text(stepCounter(2, 7)), findsOneWidget);
   });
 
   testWidgets('without subscription shows the subscribers sheet',
@@ -81,6 +81,6 @@ void main() {
     await tester.pumpWidget(_app(const Entitlements(canSeeSteps: false)));
     await _tapSteps(tester);
     expect(find.text(stepsSubscribersTitle), findsOneWidget);
-    expect(find.text(stepCounter(1, 8)), findsNothing);
+    expect(find.text(stepCounter(1, 7)), findsNothing);
   });
 }

@@ -33,20 +33,31 @@ class StepsScreen extends StatefulWidget {
 class _StepsScreenState extends State<StepsScreen> {
   int _index = 0;
 
+  /// The names/convention step is shown as a note under the first step,
+  /// not as a step of its own.
+  late final NamesStep? _notes = widget.steps
+      .whereType<NamesStep>()
+      .firstOrNull;
+  late final List<ReactionStep> _steps = [
+    for (final s in widget.steps)
+      if (s is! NamesStep) s,
+  ];
+
   ModelLabels get _l => widget.labels;
   SignConvention get _c => widget.convention;
 
   void _go(int delta) {
     setState(() {
-      _index = (_index + delta).clamp(0, widget.steps.length - 1).toInt();
+      _index = (_index + delta).clamp(0, _steps.length - 1).toInt();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final total = widget.steps.length;
-    final step = widget.steps[_index];
+    final total = _steps.length;
+    final step = _steps[_index];
     final last = _index == total - 1;
+    final notes = _notes;
 
     return Scaffold(
       appBar: AppBar(
@@ -109,6 +120,10 @@ class _StepsScreenState extends State<StepsScreen> {
                     ),
                     const SizedBox(height: 16),
                     _content(step),
+                    if (_index == 0 && notes != null) ...[
+                      const SizedBox(height: 24),
+                      _notesSection(notes),
+                    ],
                   ],
                 ),
               ),
@@ -181,6 +196,30 @@ class _StepsScreenState extends State<StepsScreen> {
             children: [for (final t in conventionLines(_c)) _Line(t)],
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _notesSection(NamesStep s) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          stepNotesTitle,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.6,
+            color: inkMuted,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          reactionStepIntro(s, _l),
+          style: const TextStyle(fontSize: 13, height: 1.35, color: inkMuted),
+        ),
+        const SizedBox(height: 10),
+        _names(s),
       ],
     );
   }
@@ -462,13 +501,20 @@ class _EquivalentLoadCard extends StatelessWidget {
     ),
   );
 
-  Widget _symbolicColumn(String title, FormulaBlock block,
-      {bool alignEnd = false}) {
+  Widget _symbolicColumn(
+    String title,
+    FormulaBlock block, {
+    bool alignEnd = false,
+  }) {
     return Column(
-      crossAxisAlignment:
-          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
-        SizedBox(width: double.infinity, child: _title(title, alignEnd: alignEnd)),
+        SizedBox(
+          width: double.infinity,
+          child: _title(title, alignEnd: alignEnd),
+        ),
         const SizedBox(height: 8),
         FormulaLineView(
           line: block.symbolic,
@@ -480,11 +526,11 @@ class _EquivalentLoadCard extends StatelessWidget {
   }
 
   Widget _valuesColumn(FormulaBlock block, {bool alignEnd = false}) {
-    final alignment =
-        alignEnd ? Alignment.centerRight : Alignment.centerLeft;
+    final alignment = alignEnd ? Alignment.centerRight : Alignment.centerLeft;
     return Column(
-      crossAxisAlignment:
-          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         FormulaLineView(line: block.substituted, alignment: alignment),
         const SizedBox(height: 10),
@@ -554,8 +600,11 @@ class _EquivalentLoadCard extends StatelessWidget {
           const SizedBox(height: 12),
           _columns(
             _symbolicColumn(formulaResultantTitle, formulas.resultant),
-            _symbolicColumn(formulaCentroidTitle, formulas.centroid,
-                alignEnd: true),
+            _symbolicColumn(
+              formulaCentroidTitle,
+              formulas.centroid,
+              alignEnd: true,
+            ),
           ),
           const Divider(height: 24, color: lineColor),
           _columns(
@@ -564,10 +613,7 @@ class _EquivalentLoadCard extends StatelessWidget {
           ),
           if (from.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(
-              from,
-              style: const TextStyle(fontSize: 12, color: inkMuted),
-            ),
+            Text(from, style: const TextStyle(fontSize: 12, color: inkMuted)),
           ],
         ],
       ),

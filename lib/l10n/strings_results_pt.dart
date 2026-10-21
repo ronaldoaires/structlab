@@ -30,3 +30,5 @@ const String stepNodesLabel = 'Nós';
 const String stepMembersLabel = 'Barras';
 
 String stepCounter(int index, int total) => 'Passo $index de $total';
+
+const String stepNotesTitle = 'OBSERVAÇÕES';
