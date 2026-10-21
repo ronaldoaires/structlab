@@ -30,6 +30,11 @@ void drawLoads(Canvas canvas, PaintContext ctx) {
       ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round;
 
+    if (load.kind == LoadKind.moment) {
+      _drawMoment(canvas, ctx, load, nodeA, color);
+      continue;
+    }
+
     if (load.kind == LoadKind.concentrated) {
       _drawConcentrated(canvas, ctx, load, nodeA, dir, color, paint);
     } else {
@@ -48,8 +53,11 @@ void _drawConcentrated(
   Paint paint,
 ) {
   final point = ctx.toScreen(node.position);
-  final clearance =
-      concentratedClearancePx(load, ctx.model.loads, ctx.model.nodeById);
+  final clearance = concentratedClearancePx(
+    load,
+    ctx.model.loads,
+    ctx.model.nodeById,
+  );
   final end = point - dir * (clearance > 0 ? clearance + 8 : 5);
   final start = end - dir * 33;
 
@@ -77,7 +85,8 @@ void _drawConcentrated(
   // Horizontal label placed beyond the arrow tail, along the arrow direction.
   final text = '${_fmt(load.q1)} kN';
   final box = labelSize(text, 10);
-  final extent = dir.dx.abs() * box.width / 2 + dir.dy.abs() * box.height / 2 + 3;
+  final extent =
+      dir.dx.abs() * box.width / 2 + dir.dy.abs() * box.height / 2 + 3;
   drawLabel(
     canvas,
     text,
@@ -165,8 +174,7 @@ void _drawDistributed(
 
   // Tallest arrow under the label (sloped loads), so the text clears the
   // tail line along its whole width.
-  double lenAt(double t) =>
-      lenA + (lenB - lenA) * t.clamp(0.0, 1.0).toDouble();
+  double lenAt(double t) => lenA + (lenB - lenA) * t.clamp(0.0, 1.0).toDouble();
   final half = (box.width / 2) / dist;
   final lenMax = math.max(
     lenAt(labelT),
@@ -183,6 +191,50 @@ void _drawDistributed(
     center,
     color: color,
     angle: readableAngle(math.atan2(delta.dy, delta.dx)),
+    background: canvasBackground,
+  );
+}
+
+
+void _drawMoment(
+  Canvas canvas,
+  PaintContext ctx,
+  StructuralLoad load,
+  StructuralNode node,
+  Color color,
+) {
+  final c = ctx.toScreen(node.position);
+  const r = momentRadiusPx;
+  final ccw = load.q1 >= 0;
+  // Canvas angles grow clockwise on screen, so counterclockwise = negative.
+  final a0 = ccw ? math.pi * 0.25 : math.pi * 0.75;
+  final sweep = ccw ? -1.5 * math.pi : 1.5 * math.pi;
+  final end = a0 + sweep;
+
+  canvas.drawArc(
+    Rect.fromCircle(center: c, radius: r),
+    a0,
+    sweep,
+    false,
+    Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round,
+  );
+  final tip = c + Offset(math.cos(end), math.sin(end)) * r;
+  final dir = ccw
+      ? Offset(math.sin(end), -math.cos(end))
+      : Offset(-math.sin(end), math.cos(end));
+  drawArrowHead(canvas, tip, dir, color, 10);
+
+  final text = '${_fmt(load.q1.abs())} kN·m';
+  final box = labelSize(text, 10);
+  drawLabel(
+    canvas,
+    text,
+    c + Offset(r * 0.8 + box.width / 2, -r - 6),
+    color: color,
     background: canvasBackground,
   );
 }

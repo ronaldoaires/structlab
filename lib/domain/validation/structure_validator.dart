@@ -13,16 +13,20 @@ ValidationReport validateStructure(StructuralModel model) {
 
   // Members whose two nodes exist.
   final members = model.members
-      .where((m) =>
-          model.nodeById(m.startNodeId) != null &&
-          model.nodeById(m.endNodeId) != null)
+      .where(
+        (m) =>
+            model.nodeById(m.startNodeId) != null &&
+            model.nodeById(m.endNodeId) != null,
+      )
       .toList();
 
   if (members.isEmpty) {
-    issues.add(const ValidationIssue(
-      code: IssueCode.noMembers,
-      severity: IssueSeverity.error,
-    ));
+    issues.add(
+      const ValidationIssue(
+        code: IssueCode.noMembers,
+        severity: IssueSeverity.error,
+      ),
+    );
     return ValidationReport(issues: issues, staticity: Staticity.unknown);
   }
 
@@ -47,14 +51,16 @@ ValidationReport validateStructure(StructuralModel model) {
   // --- Loose nodes ----------------------------------------------------------
   for (final node in model.nodes) {
     if (parent.containsKey(node.id)) continue;
-    final attached = model.supports.any((s) => s.nodeId == node.id) ||
-        model.loads
-            .any((l) => l.nodeId == node.id || l.endNodeId == node.id);
-    issues.add(ValidationIssue(
-      code: IssueCode.looseNode,
-      severity: attached ? IssueSeverity.error : IssueSeverity.warning,
-      nodeIds: [node.id],
-    ));
+    final attached =
+        model.supports.any((s) => s.nodeId == node.id) ||
+        model.loads.any((l) => l.nodeId == node.id || l.endNodeId == node.id);
+    issues.add(
+      ValidationIssue(
+        code: IssueCode.looseNode,
+        severity: attached ? IssueSeverity.error : IssueSeverity.warning,
+        nodeIds: [node.id],
+      ),
+    );
   }
 
   // --- Disconnected parts ---------------------------------------------------
@@ -68,15 +74,17 @@ ValidationReport validateStructure(StructuralModel model) {
     final biggest = memberCountByRoot.entries
         .reduce((a, b) => a.value >= b.value ? a : b)
         .key;
-    issues.add(ValidationIssue(
-      code: IssueCode.disconnected,
-      severity: IssueSeverity.error,
-      memberIds: [
-        for (final m in members)
-          if (find(m.startNodeId) != biggest) m.id,
-      ],
-      args: [partCount],
-    ));
+    issues.add(
+      ValidationIssue(
+        code: IssueCode.disconnected,
+        severity: IssueSeverity.error,
+        memberIds: [
+          for (final m in members)
+            if (find(m.startNodeId) != biggest) m.id,
+        ],
+        args: [partCount],
+      ),
+    );
   }
 
   // --- Crossings and nodes sitting on a member ------------------------------
@@ -84,16 +92,20 @@ ValidationReport validateStructure(StructuralModel model) {
 
   // --- Supports and loads ---------------------------------------------------
   if (model.supports.isEmpty) {
-    issues.add(const ValidationIssue(
-      code: IssueCode.noSupports,
-      severity: IssueSeverity.error,
-    ));
+    issues.add(
+      const ValidationIssue(
+        code: IssueCode.noSupports,
+        severity: IssueSeverity.error,
+      ),
+    );
   }
   if (model.loads.isEmpty) {
-    issues.add(const ValidationIssue(
-      code: IssueCode.noLoads,
-      severity: IssueSeverity.warning,
-    ));
+    issues.add(
+      const ValidationIssue(
+        code: IssueCode.noLoads,
+        severity: IssueSeverity.warning,
+      ),
+    );
   }
   for (final load in model.loads) {
     final endId = load.endNodeId;
@@ -101,18 +113,22 @@ ValidationReport validateStructure(StructuralModel model) {
         model.nodeById(load.nodeId) != null &&
         model.nodeById(endId) != null &&
         !isStraightConnected(model, load.nodeId, endId)) {
-      issues.add(ValidationIssue(
-        code: IssueCode.invalidDistributedLoad,
-        severity: IssueSeverity.error,
-        nodeIds: [load.nodeId, endId],
-      ));
+      issues.add(
+        ValidationIssue(
+          code: IssueCode.invalidDistributedLoad,
+          severity: IssueSeverity.error,
+          nodeIds: [load.nodeId, endId],
+        ),
+      );
     }
     if (load.q1 == 0 && load.q2 == 0) {
-      issues.add(ValidationIssue(
-        code: IssueCode.zeroLoad,
-        severity: IssueSeverity.warning,
-        nodeIds: [load.nodeId, if (endId != null) endId],
-      ));
+      issues.add(
+        ValidationIssue(
+          code: IssueCode.zeroLoad,
+          severity: IssueSeverity.warning,
+          nodeIds: [load.nodeId, ?endId],
+        ),
+      );
     }
   }
 
@@ -139,9 +155,14 @@ ValidationReport validateStructure(StructuralModel model) {
     final mz = [0.0, 0.0, 1.0];
     switch (s.type) {
       case SupportType.fixed:
-        cols..add(fx)..add(fy)..add(mz);
+        cols
+          ..add(fx)
+          ..add(fy)
+          ..add(mz);
       case SupportType.pin:
-        cols..add(fx)..add(fy);
+        cols
+          ..add(fx)
+          ..add(fy);
       case SupportType.roller:
         cols.add(restrainsVertical(s) ? fy : fx);
     }
@@ -157,14 +178,16 @@ ValidationReport validateStructure(StructuralModel model) {
   }
 
   if (_rank3(cols) < 3) {
-    issues.add(ValidationIssue(
-      code: reactions < 3
-          ? IssueCode.hypostaticCount
-          : IssueCode.unstableGeometry,
-      severity: IssueSeverity.error,
-      nodeIds: supportNodeIds,
-      args: [reactions],
-    ));
+    issues.add(
+      ValidationIssue(
+        code: reactions < 3
+            ? IssueCode.hypostaticCount
+            : IssueCode.unstableGeometry,
+        severity: IssueSeverity.error,
+        nodeIds: supportNodeIds,
+        args: [reactions],
+      ),
+    );
     return ValidationReport(
       issues: issues,
       staticity: Staticity.hypostatic,
@@ -208,11 +231,13 @@ void _checkGeometry(
       final d3 = cross2(q2 - q1, p1 - q1);
       final d4 = cross2(q2 - q1, p2 - q1);
       if (d1 * d2 < 0 && d3 * d4 < 0) {
-        issues.add(ValidationIssue(
-          code: IssueCode.crossingMembers,
-          severity: IssueSeverity.warning,
-          memberIds: [a.id, b.id],
-        ));
+        issues.add(
+          ValidationIssue(
+            code: IssueCode.crossingMembers,
+            severity: IssueSeverity.warning,
+            memberIds: [a.id, b.id],
+          ),
+        );
       }
     }
   }
@@ -224,12 +249,14 @@ void _checkGeometry(
     for (final n in model.nodes) {
       if (n.id == m.startNodeId || n.id == m.endNodeId) continue;
       if (distanceToSegment(n.position, a, b) < 0.02) {
-        issues.add(ValidationIssue(
-          code: IssueCode.nodeOnMember,
-          severity: IssueSeverity.warning,
-          nodeIds: [n.id],
-          memberIds: [m.id],
-        ));
+        issues.add(
+          ValidationIssue(
+            code: IssueCode.nodeOnMember,
+            severity: IssueSeverity.warning,
+            nodeIds: [n.id],
+            memberIds: [m.id],
+          ),
+        );
       }
     }
   }

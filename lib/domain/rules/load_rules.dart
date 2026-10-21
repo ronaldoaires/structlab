@@ -9,6 +9,9 @@ import 'package:structlab/domain/models/structural_model.dart';
 /// -90 = downward, 90 = upward, 0 = pointing right, 180 = pointing left.
 const List<double> concentratedDefaultAngles = [-90, 90, 0, 180];
 
+/// Same idea for nodes of vertical members: loads come from the right first.
+const List<double> concentratedDefaultAnglesVertical = [180, 0, -90, 90];
+
 /// True if two angles (degrees) point to the same direction.
 bool sameDirection(double a, double b) {
   final diff = ((a - b) % 360 + 360) % 360;
@@ -32,12 +35,22 @@ bool concentratedConflict(
 
 /// First default direction not yet used by a concentrated load at [nodeId].
 /// Returns null when all default directions are taken.
-double? firstFreeConcentratedAngle(List<StructuralLoad> loads, int nodeId) {
-  for (final angle in concentratedDefaultAngles) {
+double? firstFreeConcentratedAngle(
+  List<StructuralLoad> loads,
+  int nodeId, {
+  bool vertical = false,
+}) {
+  final angles =
+      vertical ? concentratedDefaultAnglesVertical : concentratedDefaultAngles;
+  for (final angle in angles) {
     if (!concentratedConflict(loads, nodeId, angle)) return angle;
   }
   return null;
 }
+
+/// True if [nodeId] already has an applied moment.
+bool momentAt(List<StructuralLoad> loads, int nodeId) =>
+    loads.any((l) => l.kind == LoadKind.moment && l.nodeId == nodeId);
 
 /// True if the span [a]-[b] overlaps (with length greater than zero) the span
 /// of an existing distributed load [other]. Spans that only touch at a node

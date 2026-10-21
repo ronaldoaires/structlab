@@ -11,8 +11,8 @@ import 'package:structlab/editor/tools/hit_testing.dart';
 import 'package:structlab/editor/widgets/glyphs.dart';
 import 'package:structlab/l10n/strings_pt.dart';
 
-/// Places concentrated loads on nodes and distributed loads between two
-/// nodes. The toolbar button opens the load kind menu.
+/// Places concentrated loads and moments on nodes and distributed loads
+/// between two nodes. The toolbar button opens the load kind menu.
 class LoadTool extends EditorToolHandler {
   @override
   EditorTool get id => EditorTool.load;
@@ -35,15 +35,18 @@ class LoadTool extends EditorToolHandler {
     final result = await showModalBottomSheet<LoadKind>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (context) => SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(loadMenuTitle,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const Text(
+                loadMenuTitle,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
               for (final kind in LoadKind.values)
                 ListTile(
@@ -75,6 +78,11 @@ class LoadTool extends EditorToolHandler {
     final node = nearestNode(model, position);
     if (node == null) {
       c.message(msgLoadNeedNode);
+      return;
+    }
+
+    if (c.loadKind == LoadKind.moment) {
+      _addMoment(c, node.id);
       return;
     }
 
@@ -112,6 +120,9 @@ class LoadTool extends EditorToolHandler {
       return;
     }
 
+    // Vertical span: the load comes from the right (180°) by default.
+    final vertical = (left.position.dx - right.position.dx).abs() < 1e-6;
+
     c.saveUndo();
     final spec = loadSpec(c.loadKind);
     final load = StructuralLoad(
@@ -121,6 +132,7 @@ class LoadTool extends EditorToolHandler {
       endNodeId: right.id,
       q1: spec.defaultQ1,
       q2: spec.defaultQ2,
+      angleDegrees: vertical ? 0.0 : -90.0,
     );
     model.loads.add(load);
     c.pendingLoadNodeId = null;
@@ -129,7 +141,11 @@ class LoadTool extends EditorToolHandler {
   }
 
   void _addConcentrated(EditorController c, int nodeId) {
-    final freeAngle = firstFreeConcentratedAngle(c.model.loads, nodeId);
+    final freeAngle = firstFreeConcentratedAngle(
+      c.model.loads,
+      nodeId,
+      vertical: nodeOnlyVertical(c.model, nodeId),
+    );
     if (freeAngle == null) {
       c.message(msgLoadFull);
       return;
@@ -144,5 +160,25 @@ class LoadTool extends EditorToolHandler {
     c.model.loads.add(load);
     c.select(SelectedType.load, load.id);
     c.status(msgConcentratedInserted);
+  }
+
+  void _addMoment(EditorController c, int nodeId) {
+    if (momentAt(c.model.loads, nodeId)) {
+      c.message(msgMomentExists);
+      return;
+    }
+    c.saveUndo();
+    final spec = loadSpec(LoadKind.moment);
+    final load = StructuralLoad(
+      id: c.model.newId(),
+      kind: LoadKind.moment,
+      nodeId: nodeId,
+      q1: spec.defaultQ1,
+      q2: spec.defaultQ1,
+      angleDegrees: 0,
+    );
+    c.model.loads.add(load);
+    c.select(SelectedType.load, load.id);
+    c.status(msgMomentInserted);
   }
 }

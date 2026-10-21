@@ -84,3 +84,17 @@ List<Offset>? loadPolygon(
   final h2 = loadArrowLengthPx(load, load.q2) / pxPerMeter;
   return [a, b, b - dir * h2, a - dir * h1];
 }
+
+
+/// Distance (meters) from [position] to the arc of an applied moment.
+double distanceToMoment(
+  StructuralModel model,
+  StructuralLoad load,
+  Offset position, {
+  double pxPerMeter = pixelsPerMeter,
+}) {
+  final n = model.nodeById(load.nodeId);
+  if (n == null) return double.infinity;
+  return ((n.position - position).distance - momentRadiusPx / pxPerMeter)
+      .abs();
+}

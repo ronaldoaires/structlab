@@ -5,6 +5,9 @@ import 'package:structlab/core/constants.dart';
 import 'package:structlab/domain/models/load.dart';
 import 'package:structlab/domain/models/node.dart';
 
+/// Radius (px) of the arc that draws an applied moment.
+const double momentRadiusPx = 28;
+
 /// Arrow length (in px) of a load for intensity [q].
 double loadArrowLengthPx(StructuralLoad load, double q) {
   final maxQ = math.max(load.q1.abs(), load.q2.abs());

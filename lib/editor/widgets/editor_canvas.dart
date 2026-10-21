@@ -107,6 +107,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
+        c.viewSize = size;
         return Listener(
           behavior: HitTestBehavior.opaque,
           onPointerDown: (e) => _down(e, size),

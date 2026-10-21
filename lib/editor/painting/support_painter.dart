@@ -44,8 +44,8 @@ void drawSupports(Canvas canvas, PaintContext ctx) {
         );
       } else {
         canvas.drawLine(
-          point + const Offset(-15, 22),
-          point + const Offset(15, 22),
+          point + const Offset(-15, 25),
+          point + const Offset(15, 25),
           paint,
         );
       }

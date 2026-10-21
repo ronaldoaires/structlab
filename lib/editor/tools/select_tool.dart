@@ -182,9 +182,15 @@ class SelectTool extends EditorToolHandler {
     }
 
     for (final load in model.loads) {
-      if (load.kind != LoadKind.concentrated) continue;
-      final d = distanceToConcentratedLoad(model, load, position,
-          pxPerMeter: c.pxPerMeter);
+      final double d;
+      if (load.kind == LoadKind.concentrated) {
+        d = distanceToConcentratedLoad(model, load, position,
+            pxPerMeter: c.pxPerMeter);
+      } else if (load.kind == LoadKind.moment) {
+        d = distanceToMoment(model, load, position, pxPerMeter: c.pxPerMeter);
+      } else {
+        continue;
+      }
       if (d < c.tol(0.22)) {
         c.select(SelectedType.load, load.id);
         c.status(msgLoadSelected);

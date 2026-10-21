@@ -28,6 +28,13 @@ const Map<LoadKind, LoadSpec> loadCatalog = {
     defaultQ2: 10,
     unit: 'kN',
   ),
+  LoadKind.moment: LoadSpec(
+    kind: LoadKind.moment,
+    isDistributed: false,
+    defaultQ1: 10,
+    defaultQ2: 10,
+    unit: 'kN·m',
+  ),
   LoadKind.uniform: LoadSpec(
     kind: LoadKind.uniform,
     isDistributed: true,

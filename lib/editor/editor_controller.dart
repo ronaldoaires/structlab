@@ -76,6 +76,9 @@ class EditorController extends ChangeNotifier {
   double zoom = 1.0;
   Offset pan = Offset.zero;
 
+  /// Size of the canvas, set by the canvas widget (used to fit the view).
+  Size viewSize = Size.zero;
+
   // Beam in progress.
   Offset? pendingBeamStart;
   Offset? previewEnd;
@@ -399,6 +402,39 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Zooms and pans so the whole structure fits on screen, clear of the top
+  /// chips and the bottom toolbar. Empty model: back to the default view.
+  void fitView() {
+    if (model.nodes.isEmpty || viewSize.isEmpty) {
+      resetView();
+      return;
+    }
+    var minX = double.infinity, maxX = -double.infinity;
+    var minY = double.infinity, maxY = -double.infinity;
+    for (final n in model.nodes) {
+      minX = math.min(minX, n.position.dx);
+      maxX = math.max(maxX, n.position.dx);
+      minY = math.min(minY, n.position.dy);
+      maxY = math.max(maxY, n.position.dy);
+    }
+
+    // Space taken by floating UI (px) and breathing room for supports/loads.
+    const marginSide = 48.0, marginTop = 120.0, marginBottom = 200.0;
+    final availW = math.max(100.0, viewSize.width - 2 * marginSide);
+    final availH = math.max(100.0, viewSize.height - marginTop - marginBottom);
+
+    final w = math.max(maxX - minX, 0.5);
+    final h = math.max(maxY - minY, 0.5);
+    final ppm = math.min(availW / w, availH / h);
+    zoom = (ppm / pixelsPerMeter).clamp(minZoom, 2.0).toDouble();
+
+    final center = Offset((minX + maxX) / 2, (minY + maxY) / 2);
+    final viewCenter = Offset(viewSize.width / 2, viewSize.height / 2);
+    final target = Offset(viewSize.width / 2, marginTop + availH / 2);
+    pan = target - viewCenter - Offset(center.dx, -center.dy) * pxPerMeter;
+    notifyListeners();
+  }
+
   /// First point: snaps to an existing node, otherwise to the grid.
   Offset resolveStartPoint(Offset raw) {
     final near = nearestNode(model, raw, tolerance: 0.35);
@@ -453,6 +489,20 @@ class EditorController extends ChangeNotifier {
     model.restoreFrom(_undoStack.removeLast());
     _resetTransient();
     status(msgUndone);
+  }
+
+  /// Clears the whole model. Undoable, so no confirmation is needed.
+  void clearAll() {
+    if (model.isEmpty) {
+      message(msgModelAlreadyEmpty);
+      return;
+    }
+    saveUndo();
+    model.clear();
+    _resetTransient();
+    zoom = 1.0;
+    pan = Offset.zero;
+    status(msgCleared);
   }
 
   void validateModel() {

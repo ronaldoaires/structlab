@@ -132,3 +132,17 @@ NodeLineInfo? nodeLineInfo(StructuralModel model, int nodeId) {
   }
   return null;
 }
+
+/// True if the member is vertical (both nodes share the same X).
+bool isVerticalMember(StructuralModel model, StructuralMember m) {
+  final a = model.nodeById(m.startNodeId);
+  final b = model.nodeById(m.endNodeId);
+  if (a == null || b == null) return false;
+  return (a.position.dx - b.position.dx).abs() < 1e-6;
+}
+
+/// True if every member that reaches [nodeId] is vertical.
+bool nodeOnlyVertical(StructuralModel model, int nodeId) {
+  final ms = membersAt(model, nodeId);
+  return ms.isNotEmpty && ms.every((m) => isVerticalMember(model, m));
+}

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/domain/models/load.dart';
@@ -144,6 +145,23 @@ class _LoadGlyphPainter extends CustomPainter {
         Offset(x + w * 0.07, headY - h * 0.10),
         stroke,
       );
+    }
+
+        if (kind == LoadKind.moment) {
+      final center = Offset(w * 0.5, h * 0.5);
+      final r = w * 0.34;
+      const a0 = math.pi * 0.25;
+      const sweep = -1.5 * math.pi;
+      canvas.drawArc(
+          Rect.fromCircle(center: center, radius: r), a0, sweep, false, stroke);
+      const end = a0 + sweep;
+      final tip = center + Offset(math.cos(end), math.sin(end)) * r;
+      final dir = Offset(math.sin(end), -math.cos(end));
+      final perp = Offset(-dir.dy, dir.dx);
+      final s = w * 0.16;
+      canvas.drawLine(tip, tip - dir * s + perp * s * 0.5, stroke);
+      canvas.drawLine(tip, tip - dir * s - perp * s * 0.5, stroke);
+      return;
     }
 
     canvas.drawLine(Offset(w * 0.08, baseY), Offset(w * 0.92, baseY), stroke);

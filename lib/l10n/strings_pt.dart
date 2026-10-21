@@ -23,7 +23,6 @@ const String menuAbout = 'Sobre o aplicativo';
 const String model2dLabel = 'MODELO 2D';
 const String snapLabel = 'Snap';
 const String orthoLabel = 'Ortho';
-const String unitsLabel = 'kN · m';
 const String validateModelLabel = 'Validar modelo';
 
 const String editTooltip = 'Editar propriedades';
@@ -43,14 +42,17 @@ String propsMemberSubtitle(double length, double angle) =>
 String propsSupportSubtitle(SupportType type, int rotation) =>
     '${supportName(type)} · ${supportSideName(rotation)}';
 
-String propsLoadTitle(LoadKind kind) =>
-    'Carga ${loadKindName(kind).toLowerCase()}';
+String propsLoadTitle(LoadKind kind) => kind == LoadKind.moment
+    ? 'Momento aplicado'
+    : 'Carga ${loadKindName(kind).toLowerCase()}';
 
 String propsLoadSubtitle(StructuralLoad load, String span) {
   final ang = '${load.angleDegrees.toStringAsFixed(0)}°';
   switch (load.kind) {
     case LoadKind.concentrated:
       return '${load.q1.toStringAsFixed(2)} kN · ${loadDirectionName(load.angleDegrees)}';
+    case LoadKind.moment:
+      return '${load.q1.abs().toStringAsFixed(2)} kN·m · ${load.q1 >= 0 ? momentCcw : momentCw}';
     case LoadKind.uniform:
       return '${load.q1.toStringAsFixed(2)} kN/m · $span · $ang';
     case LoadKind.triangular:
@@ -96,6 +98,7 @@ String supportSideName(int rot) => switch (rot % 360) {
 
 String loadKindName(LoadKind kind) => switch (kind) {
   LoadKind.concentrated => 'Concentrada',
+  LoadKind.moment => 'Momento',
   LoadKind.uniform => 'Distribuída (retangular)',
   LoadKind.triangular => 'Triangular',
   LoadKind.trapezoidal => 'Trapezoidal',
@@ -103,6 +106,7 @@ String loadKindName(LoadKind kind) => switch (kind) {
 
 String loadShortName(LoadKind kind) => switch (kind) {
   LoadKind.concentrated => 'Concentrada',
+  LoadKind.moment => 'Momento',
   LoadKind.uniform => 'Distribuída',
   LoadKind.triangular => 'Triangular',
   LoadKind.trapezoidal => 'Trapezoidal',
@@ -110,6 +114,7 @@ String loadShortName(LoadKind kind) => switch (kind) {
 
 String loadKindHint(LoadKind kind) => switch (kind) {
   LoadKind.concentrated => 'Força em um nó (kN)',
+  LoadKind.moment => 'Momento em um nó (kN·m)',
   LoadKind.uniform => 'Mesma intensidade entre dois nós (kN/m)',
   LoadKind.triangular => 'Varia de zero até um pico (kN/m)',
   LoadKind.trapezoidal => 'Intensidade diferente em cada nó (kN/m)',
@@ -156,6 +161,7 @@ const String loadFromRight = '← Da direita';
 String loadIntensityLabel(LoadKind kind) => switch (kind) {
   LoadKind.triangular => 'Intensidade máxima (pico)',
   LoadKind.trapezoidal => 'Intensidade na esquerda',
+  LoadKind.moment => 'Intensidade do momento',
   _ => 'Intensidade',
 };
 
@@ -249,9 +255,11 @@ String msgSupportChosen(SupportType t) =>
 String msgSupportInserted(SupportType t) => '${supportName(t)} inserido.';
 
 // Load tool
-String loadHint(LoadKind kind) => kind == LoadKind.concentrated
-    ? 'Toque em um nó para aplicar a carga concentrada.'
-    : 'Toque no nó inicial e depois no nó final da carga.';
+String loadHint(LoadKind kind) => switch (kind) {
+  LoadKind.concentrated => 'Toque em um nó para aplicar a carga concentrada.',
+  LoadKind.moment => 'Toque em um nó para aplicar o momento.',
+  _ => 'Toque no nó inicial e depois no nó final da carga.',
+};
 
 const String msgLoadNeedNode =
     'Toque em um nó para aplicar a carga. Use a ferramenta Nó para criar nós sobre as barras.';
@@ -268,6 +276,11 @@ const String msgLoadOverlap =
 const String msgLoadDirectionTaken =
     'Já existe uma carga concentrada nessa direção neste nó.';
 const String msgLoadUpdated = 'Carga atualizada.';
+const String msgMomentInserted =
+    'Momento inserido. Edite o valor e o sentido no lápis.';
+const String msgMomentExists = 'Esse nó já possui um momento aplicado.';
+const String momentCcw = 'Anti-horário';
+const String momentCw = 'Horário';
 
 String msgDistributedInserted(LoadKind kind) =>
     'Carga ${loadKindName(kind).toLowerCase()} inserida. Edite os valores no lápis.';
@@ -291,7 +304,9 @@ String nodeKindHint(NodeKind kind) => switch (kind) {
   NodeKind.hinge => 'Rótula: libera a rotação entre barras.',
 };
 
-const String resetViewTooltip = 'Centralizar vista';
+const String resetViewTooltip = 'Enquadrar estrutura';
+const String clearTooltip = 'Limpar tela';
+const String msgCleared = 'Tela limpa. Use Desfazer para recuperar.';
 const String msgNodeMoved = 'Nó movido.';
 const String msgNodeMoveBlocked =
     'Esse movimento desalinharia uma carga distribuída ou sobreporia outro nó.';

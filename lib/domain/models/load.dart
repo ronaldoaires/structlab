@@ -1,4 +1,4 @@
-enum LoadKind { concentrated, uniform, triangular, trapezoidal }
+enum LoadKind { concentrated, moment, uniform, triangular, trapezoidal }
 
 /// A load applied to a node (concentrated) or between two nodes (distributed).
 class StructuralLoad {
@@ -21,7 +21,8 @@ class StructuralLoad {
   /// Distributed: end node (right). Null for concentrated loads.
   final int? endNodeId;
 
-  /// Concentrated: kN. Distributed: kN/m at the start node.
+  /// Concentrated: kN. Moment: kN·m, positive = counterclockwise.
+  /// Distributed: kN/m at the start node.
   double q1;
 
   /// Distributed: kN/m at the end node.
