@@ -3,10 +3,13 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:structlab/analysis/conventions/sign_convention.dart';
 import 'package:structlab/analysis/naming/labels.dart';
+import 'package:structlab/analysis/reactions/equivalent_loads.dart';
+import 'package:structlab/core/format_number.dart';
 import 'package:structlab/analysis/reactions/reaction_steps.dart';
 import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/l10n/strings_reactions_pt.dart';
 import 'package:structlab/l10n/strings_results_pt.dart';
+import 'package:structlab/results/widgets/load_shape_painter.dart';
 
 /// The step by step of the reactions, one step at a time.
 class StepsScreen extends StatefulWidget {
@@ -60,9 +63,10 @@ class _StepsScreenState extends State<StepsScreen> {
                   Text(
                     stepCounter(_index + 1, total),
                     style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: inkMuted),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: inkMuted,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   ClipRRect(
@@ -87,15 +91,19 @@ class _StepsScreenState extends State<StepsScreen> {
                     Text(
                       reactionStepTitle(step, _l),
                       style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: ink),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: ink,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       reactionStepIntro(step, _l),
                       style: const TextStyle(
-                          fontSize: 14, height: 1.35, color: inkMuted),
+                        fontSize: 14,
+                        height: 1.35,
+                        color: inkMuted,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _content(step),
@@ -117,8 +125,9 @@ class _StepsScreenState extends State<StepsScreen> {
                   Expanded(
                     flex: 2,
                     child: FilledButton(
-                      onPressed:
-                          last ? () => Navigator.pop(context) : () => _go(1),
+                      onPressed: last
+                          ? () => Navigator.pop(context)
+                          : () => _go(1),
                       child: Text(last ? finishLabel : nextLabel),
                     ),
                   ),
@@ -136,14 +145,14 @@ class _StepsScreenState extends State<StepsScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _content(ReactionStep step) => switch (step) {
-        NamesStep s => _names(s),
-        EquivalentLoadsStep s => _equivalents(s),
-        DecompositionStep s => _decomposition(s),
-        UnknownsStep s => _unknowns(s),
-        EquationStep s => _equation(s),
-        CheckStep s => _check(s),
-        SummaryStep s => _summary(s),
-      };
+    NamesStep s => _names(s),
+    EquivalentLoadsStep s => _equivalents(s),
+    DecompositionStep s => _decomposition(s),
+    UnknownsStep s => _unknowns(s),
+    EquationStep s => _equation(s),
+    CheckStep s => _check(s),
+    SummaryStep s => _summary(s),
+  };
 
   Widget _names(NamesStep s) {
     return Column(
@@ -156,7 +165,8 @@ class _StepsScreenState extends State<StepsScreen> {
               _Line('$stepNodesLabel: ${s.nodeIds.map(_l.node).join(', ')}'),
               if (s.memberIds.isNotEmpty)
                 _Line(
-                    '$stepMembersLabel: ${s.memberIds.map(_l.member).join(', ')}'),
+                  '$stepMembersLabel: ${s.memberIds.map(_l.member).join(', ')}',
+                ),
             ],
           ),
         ),
@@ -178,17 +188,7 @@ class _StepsScreenState extends State<StepsScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final e in s.loads) ...[
-          _Card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Line(equivalentTitle(e, _l), bold: true),
-                const SizedBox(height: 8),
-                _Line(equivalentForceLine(e), mono: true),
-                _Line(equivalentCentroidLine(e, _l), mono: true),
-              ],
-            ),
-          ),
+          _EquivalentLoadCard(load: e, labels: _l),
           const SizedBox(height: 12),
         ],
       ],
@@ -284,8 +284,11 @@ class _StepsScreenState extends State<StepsScreen> {
           for (final r in s.reactions)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: _Line(reactionSummaryLine(r, _l, _c),
-                  bold: true, mono: true),
+              child: _Line(
+                reactionSummaryLine(r, _l, _c),
+                bold: true,
+                mono: true,
+              ),
             ),
         ],
       ),
@@ -423,6 +426,67 @@ class _ResultBox extends StatelessWidget {
           color: color,
           fontFeatures: const [FontFeature.tabularFigures()],
         ),
+      ),
+    );
+  }
+}
+
+/// Card of one distributed load: the figure, then the simple formulas.
+class _EquivalentLoadCard extends StatelessWidget {
+  const _EquivalentLoadCard({required this.load, required this.labels});
+
+  final EquivalentLoad load;
+  final ModelLabels labels;
+
+  @override
+  Widget build(BuildContext context) {
+    final e = load;
+    String q(String name, double v) => '$name = ${formatNumber(v)} kN/m';
+
+    // Labels: q (rectangle, triangle) or H and h (trapezoid).
+    final (left, right) = switch (e.shape) {
+      LoadShape.rectangle => (q('q', e.q1), null),
+      LoadShape.triangle =>
+        e.peakAtEnd ? (null, q('q', e.q2)) : (q('q', e.q1), null),
+      LoadShape.trapezoid =>
+        e.peakAtEnd
+            ? (q('h', e.q1), q('H', e.q2))
+            : (q('H', e.q1), q('h', e.q2)),
+    };
+
+    final from = equivalentCentroidFrom(e, labels);
+
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Line(
+            '${equivalentTitle(e, labels)} · ${equivalentShapeName(e)}',
+            bold: true,
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 130,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: LoadShapePainter(
+                q1: e.q1,
+                q2: e.q2,
+                cgFraction: e.centroid / e.length,
+                labelLeft: left,
+                labelRight: right,
+                leftSpanLabel: '${formatNumber(e.centroid)} m',
+                rightSpanLabel: '${formatNumber(e.length - e.centroid)} m',
+                startLabel: labels.node(e.startNodeId),
+                endLabel: labels.node(e.endNodeId),
+              ),
+            ),
+          ),
+          const Divider(height: 20, color: lineColor),
+          _Line(equivalentForceLine(e), mono: true, bold: true),
+          _Line(equivalentCentroidLine(e, labels), mono: true, bold: true),
+          if (from.isNotEmpty) _Line(from),
+        ],
       ),
     );
   }

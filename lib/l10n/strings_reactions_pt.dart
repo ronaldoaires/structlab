@@ -34,10 +34,10 @@ String solveFailureMessage(SolveFailure f) => switch (f) {
 // Names, units, directions
 // ---------------------------------------------------------------------------
 
-/// Ax, Ay, MA...
+/// VA, HA, MA: V = vertical, H = horizontal, M = moment.
 String reactionName(Reaction r, ModelLabels l) => switch (r.kind) {
-  ReactionKind.fx => '${l.node(r.nodeId)}x',
-  ReactionKind.fy => '${l.node(r.nodeId)}y',
+  ReactionKind.fx => 'H${l.node(r.nodeId)}',
+  ReactionKind.fy => 'V${l.node(r.nodeId)}',
   ReactionKind.moment => 'M${l.node(r.nodeId)}',
 };
 
@@ -111,7 +111,7 @@ String reactionStepIntro(ReactionStep s, ModelLabels l) => switch (s) {
   NamesStep() =>
     'Cada nó recebe uma letra (A, B, C…) da esquerda para a direita. As barras levam o nome dos seus nós (AB, BC…).',
   EquivalentLoadsStep() =>
-    'Cada carga distribuída é trocada por uma única força, a resultante R, aplicada no centro de gravidade da carga.',
+    'Cada carga distribuída é trocada por uma única força, a resultante R, aplicada no centro de gravidade CG da carga.',
   DecompositionStep() =>
     'Forças inclinadas são separadas em componente horizontal (Fx) e vertical (Fy) para entrar nas equações. O ângulo é medido a partir do eixo x, no sentido anti-horário.',
   UnknownsStep() =>
@@ -128,28 +128,42 @@ String reactionStepIntro(ReactionStep s, ModelLabels l) => switch (s) {
     'Valor positivo: sentido adotado. Valor negativo: sentido contrário ao adotado.',
 };
 
-// ---------------------------------------------------------------------------
-// Equivalent loads
-// ---------------------------------------------------------------------------
-
 String equivalentTitle(EquivalentLoad e, ModelLabels l) =>
-    'Carga ${loadShortName(e.kind).toLowerCase()} '
-    '${l.node(e.startNodeId)}${l.node(e.endNodeId)} '
-    '(q1 = ${_f(e.q1)} kN/m, q2 = ${_f(e.q2)} kN/m, L = ${_f(e.length)} m)';
+    'Carga ${l.node(e.startNodeId)}${l.node(e.endNodeId)}';
 
-String equivalentForceLine(EquivalentLoad e) =>
-    'R = (q1 + q2) · L / 2 = (${_f(e.q1)} + ${_f(e.q2)}) · ${_f(e.length)} / 2'
-    ' = ${_f(e.resultant)} kN';
+String equivalentShapeName(EquivalentLoad e) => switch (e.shape) {
+  LoadShape.rectangle => 'Retangular',
+  LoadShape.triangle => 'Triangular',
+  LoadShape.trapezoid => 'Trapezoidal',
+};
 
-String equivalentCentroidLine(EquivalentLoad e, ModelLabels l) =>
-    'x̄ = L · (q1 + 2·q2) / (3 · (q1 + q2)) = '
-    '${_f(e.length)} · (${_f(e.q1)} + 2·${_f(e.q2)}) / '
-    '(3 · (${_f(e.q1)} + ${_f(e.q2)})) = ${_f(e.centroid)} m '
-    '(a partir de ${l.node(e.startNodeId)})';
+String equivalentForceLine(EquivalentLoad e) => switch (e.shape) {
+  LoadShape.rectangle =>
+    'R = q · L = ${_f(e.high)} · ${_f(e.length)} = ${_f(e.resultant)} kN',
+  LoadShape.triangle =>
+    'R = q · L / 2 = ${_f(e.high)} · ${_f(e.length)} / 2 = ${_f(e.resultant)} kN',
+  LoadShape.trapezoid =>
+    'R = (H + h) · L / 2 = (${_f(e.high)} + ${_f(e.low)}) · ${_f(e.length)} / 2'
+        ' = ${_f(e.resultant)} kN',
+};
 
-// ---------------------------------------------------------------------------
-// Decomposition
-// ---------------------------------------------------------------------------
+String equivalentCentroidLine(EquivalentLoad e, ModelLabels l) {
+  final cg = _f(e.centroidFromPeak);
+  return switch (e.shape) {
+    LoadShape.rectangle => 'CG = L / 2 = ${_f(e.length)} / 2 = $cg m',
+    LoadShape.triangle => 'CG = L / 3 = ${_f(e.length)} / 3 = $cg m',
+    LoadShape.trapezoid =>
+      'CG = L · (H + 2·h) / (3 · (H + h)) = ${_f(e.length)} · '
+          '(${_f(e.high)} + 2·${_f(e.low)}) / '
+          '(3 · (${_f(e.high)} + ${_f(e.low)})) = $cg m',
+  };
+}
+
+/// Where the CG is measured from. Empty for the rectangle (middle of the span).
+String equivalentCentroidFrom(EquivalentLoad e, ModelLabels l) =>
+    e.shape == LoadShape.rectangle
+        ? ''
+        : '(CG medido a partir de ${l.node(e.peakNodeId)}, lado da maior altura)';
 
 /// [title, Fx line, Fy line] for an inclined force.
 List<String> decompositionLines(AppliedAction a, ModelLabels l) {

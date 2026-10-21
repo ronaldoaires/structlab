@@ -60,8 +60,8 @@ void main() {
   testWidgets('shows the reactions and the steps button', (tester) async {
     await tester.pumpWidget(_app(const Entitlements()));
     expect(find.text(reactionsCardTitle), findsOneWidget);
-    expect(find.text('Ay'), findsOneWidget);
-    expect(find.text('Cy'), findsOneWidget);
+    expect(find.text('VA'), findsOneWidget);
+    expect(find.text('VC'), findsOneWidget);
     expect(find.text(seeStepsLabel), findsOneWidget);
   });
 

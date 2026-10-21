@@ -29,6 +29,9 @@ const DistributedBasis distributedBasis = DistributedBasis.memberLength;
   );
 }
 
+/// Shape of a distributed load. Decides which simple formula is shown.
+enum LoadShape { rectangle, triangle, trapezoid }
+
 /// A distributed load replaced by one concentrated force. Values are in the
 /// internal convention (model coordinates, y up).
 class EquivalentLoad {
@@ -70,6 +73,26 @@ class EquivalentLoad {
 
   double get fx => resultant * math.cos(angleDegrees * math.pi / 180);
   double get fy => resultant * math.sin(angleDegrees * math.pi / 180);
+
+  /// Highest height (H) and lowest height (h), in kN/m.
+  double get high => math.max(q1, q2);
+  double get low => math.min(q1, q2);
+
+  LoadShape get shape {
+    if ((high - low).abs() < 1e-9) return LoadShape.rectangle;
+    if (low.abs() < 1e-9) return LoadShape.triangle;
+    return LoadShape.trapezoid;
+  }
+
+  /// True when the highest side is at the end node.
+  bool get peakAtEnd => q2 > q1;
+
+  /// Node on the side of the highest height.
+  int get peakNodeId => peakAtEnd ? endNodeId : startNodeId;
+
+  /// Centroid measured from the highest side, as in the textbook formulas.
+  /// [centroid] is measured from the start node.
+  double get centroidFromPeak => peakAtEnd ? length - centroid : centroid;
 }
 
 /// One [EquivalentLoad] for each distributed load of the model. Loads with no
@@ -97,19 +120,21 @@ List<EquivalentLoad> equivalentLoads(StructuralModel model) {
 
     // The centroid fraction is the same along the member in both bases.
     final alongMember = r.centroid * memberLength / basisLength;
-    result.add(EquivalentLoad(
-      loadId: load.id,
-      kind: load.kind,
-      startNodeId: a.id,
-      endNodeId: b.id,
-      q1: load.q1,
-      q2: load.q2,
-      length: basisLength,
-      resultant: r.force,
-      centroid: alongMember,
-      point: a.position + span / memberLength * alongMember,
-      angleDegrees: load.angleDegrees,
-    ));
+    result.add(
+      EquivalentLoad(
+        loadId: load.id,
+        kind: load.kind,
+        startNodeId: a.id,
+        endNodeId: b.id,
+        q1: load.q1,
+        q2: load.q2,
+        length: basisLength,
+        resultant: r.force,
+        centroid: alongMember,
+        point: a.position + span / memberLength * alongMember,
+        angleDegrees: load.angleDegrees,
+      ),
+    );
   }
   return result;
 }

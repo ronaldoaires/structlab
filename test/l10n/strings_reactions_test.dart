@@ -63,32 +63,31 @@ void main() {
         termText(t, EquationKind.sumMoment, c, labels),
     ];
     expect(lines[0].source, 'Carga em B');
-    expect(lines[0].calc, '−10.00 · 1.00');
-    expect(lines[0].value, '−10.00');
+    expect(lines[0].calc, '−10 · 1');
+    expect(lines[0].value, '−10');
     expect(lines[1].source, 'Resultante AC');
-    expect(lines[1].calc, '−20.00 · 2.00');
-    expect(lines[1].value, '−40.00');
-    expect(lines[2].source, 'Reação Cy');
-    expect(lines[2].calc, '+4.00 · Cy');
+    expect(lines[1].calc, '−20 · 2');
+    expect(lines[1].value, '−40');
+    expect(lines[2].source, 'Reação VC');
+    expect(lines[2].calc, '+4 · VC');
     expect(lines[2].value, isNull);
 
-    expect(equationSumLine(eqs[0], labels, c), '4.00 · Cy − 50.00 = 0');
+    expect(equationSumLine(eqs[0], labels, c), '4 · VC − 50 = 0');
     expect(equationResultLine(eqs[0], labels, c),
-        'Cy = 50.00 / 4.00 = 12.50 kN ↑');
+        'VC = 50 / 4 = 12.5 kN ↑');
   });
 
   test('ΣFy and ΣFx lines', () {
-    expect(equationSumLine(eqs[1], labels, c), 'Ay − 17.50 = 0');
-    expect(equationResultLine(eqs[1], labels, c), 'Ay = 17.50 kN ↑');
-    expect(equationResultLine(eqs[2], labels, c), 'Ax = 0.00 kN');
+    expect(equationSumLine(eqs[1], labels, c), 'VA − 17.5 = 0');
+    expect(equationResultLine(eqs[1], labels, c), 'VA = 17.5 kN ↑');
+    expect(equationResultLine(eqs[2], labels, c), 'HA = 0 kN');
   });
 
   test('equivalent load lines', () {
     final e = steps.whereType<EquivalentLoadsStep>().single.loads.single;
-    expect(equivalentTitle(e, labels),
-        'Carga distribuída AC (q1 = 5.00 kN/m, q2 = 5.00 kN/m, L = 4.00 m)');
-    expect(equivalentForceLine(e),
-        'R = (q1 + q2) · L / 2 = (5.00 + 5.00) · 4.00 / 2 = 20.00 kN');
+    expect(equivalentTitle(e, labels), 'Carga AC');
+    expect(equivalentForceLine(e), 'R = q · L = 5 · 4 = 20 kN');
+    expect(equivalentCentroidLine(e, labels), 'CG = L / 2 = 4 / 2 = 2 m');
   });
 
   test('check and summary', () {
@@ -98,7 +97,7 @@ void main() {
 
     final summary = steps.whereType<SummaryStep>().single;
     expect(reactionSummaryLine(summary.reactions[1], labels, c),
-        'Ay = 17.50 kN ↑');
+        'VA = 17.5 kN ↑');
   });
 
   test('negative value is explained as opposite sense', () {
@@ -110,14 +109,14 @@ void main() {
       value: -2,
     );
     expect(reactionSummaryLine(r, labels, c),
-        'Cy = −2.00 kN ↓ (sentido contrário ao adotado)');
+        'VC = −2 kN ↓ (sentido contrário ao adotado)');
   });
 
   test('flipped convention changes the shown sign only', () {
     const flipped = SignConvention(ySign: -1);
     final r = solution.reactions[1]; // Ay = +17.5 internal (up)
     expect(reactionSummaryLine(r.copyWithValue(17.5), labels, flipped),
-        'Ay = −17.50 kN ↑ (sentido contrário ao adotado)');
+        'VA = −17.5 kN ↑ (sentido contrário ao adotado)');
   });
 
   test('solver failures have a message', () {
