@@ -6,7 +6,6 @@ import 'package:structlab/analysis/reactions/equivalent_loads.dart';
 import 'package:structlab/analysis/reactions/reaction_solver.dart';
 import 'package:structlab/analysis/reactions/reaction_steps.dart';
 import 'package:structlab/core/format_number.dart';
-import 'package:structlab/l10n/strings_pt.dart';
 
 // Texts (Portuguese) of the reactions step by step. The analysis layer gives
 // data only; everything the student reads is built here.

@@ -11,6 +11,10 @@ import 'package:structlab/l10n/strings_results_pt.dart';
 import 'package:structlab/results/steps_screen.dart';
 import 'package:structlab/services/entitlements.dart';
 
+import 'internal_forces_screen.dart';
+
+import 'package:structlab/l10n/strings_internal_forces_pt.dart';
+
 /// Results for everybody: support reactions, placeholders for the N, V and M
 /// diagrams, and a big button to the step by step (subscribers only).
 class ReactionsScreen extends StatefulWidget {
@@ -134,11 +138,24 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
                       convention: _convention,
                     ),
                     const SizedBox(height: 12),
-                    const _DiagramPlaceholder(title: diagramNormalTitle),
-                    const SizedBox(height: 8),
-                    const _DiagramPlaceholder(title: diagramShearTitle),
-                    const SizedBox(height: 8),
-                    const _DiagramPlaceholder(title: diagramMomentTitle),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => InternalForcesScreen(
+                              model: widget.model,
+                              reactions: solution,
+                              entitlements: widget.entitlements,
+                            ),
+                          ),
+                        ),
+                        icon: const Icon(Icons.show_chart),
+                        label: const Text(openInternalForcesLabel),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     if (_steps == null)
                       const Text(
@@ -260,43 +277,6 @@ class _ReactionsCard extends StatelessWidget {
             ),
           const Text(
             reactionsCardNote,
-            style: TextStyle(fontSize: 12, color: inkMuted),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DiagramPlaceholder extends StatelessWidget {
-  const _DiagramPlaceholder({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        border: Border.all(color: lineColor),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.show_chart, color: inkMuted),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: ink,
-              ),
-            ),
-          ),
-          const Text(
-            diagramSoonLabel,
             style: TextStyle(fontSize: 12, color: inkMuted),
           ),
         ],
