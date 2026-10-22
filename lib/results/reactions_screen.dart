@@ -10,6 +10,11 @@ import 'package:structlab/l10n/strings_reactions_pt.dart';
 import 'package:structlab/l10n/strings_results_pt.dart';
 import 'package:structlab/results/steps_screen.dart';
 import 'package:structlab/services/entitlements.dart';
+import 'package:structlab/analysis/internal_forces/integral_method.dart';
+import 'package:structlab/analysis/internal_forces/internal_force_method.dart';
+import 'package:structlab/analysis/internal_forces/internal_forces_model.dart';
+import 'package:structlab/results/widgets/force_diagram.dart';
+import 'package:structlab/results/widgets/step_blocks.dart';
 
 import 'internal_forces_screen.dart';
 
@@ -44,6 +49,9 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
           _outcome.solution!,
           convention: _convention,
         );
+  late final InternalForcesOutcome? _forces = _outcome.solution == null
+      ? null
+      : const IntegralMethod().solve(widget.model, _outcome.solution!);
 
   void _openSteps() {
     final steps = _steps;
@@ -137,7 +145,12 @@ class _ReactionsScreenState extends State<ReactionsScreen> {
                       labels: _labels,
                       convention: _convention,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
+                    _DiagramsSection(
+                      model: widget.model,
+                      outcome: _forces!,
+                      labels: _labels,
+                    ),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 52,
@@ -311,6 +324,64 @@ class _FailureCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+const List<InternalForceKind> _diagramOrder = [
+  InternalForceKind.shear,
+  InternalForceKind.moment,
+  InternalForceKind.normal,
+];
+
+/// The three diagrams (V, M, N) shown right under the reactions.
+class _DiagramsSection extends StatelessWidget {
+  const _DiagramsSection({
+    required this.model,
+    required this.outcome,
+    required this.labels,
+  });
+
+  final StructuralModel model;
+  final InternalForcesOutcome outcome;
+  final ModelLabels labels;
+
+  @override
+  Widget build(BuildContext context) {
+    final result = outcome.result;
+    if (result == null) {
+      return StepCard(
+        child: Text(internalForcesFailureMessage(outcome.failure!)),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final k in _diagramOrder) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(
+              forceKindTitle(k),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: ink,
+              ),
+            ),
+          ),
+          StepCard(
+            child: ForceDiagramView(
+              model: model,
+              result: result,
+              kind: k,
+              labels: labels,
+              samples: const {},
+              allowDrag: false,
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+      ],
     );
   }
 }

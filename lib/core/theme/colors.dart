@@ -21,3 +21,7 @@ const Color warning = Color(0xFFB45309);
 
 /// Halo drawn on the canvas around elements flagged by the validation.
 const Color flagColor = Color(0xFFF59E0B);
+
+/// Diagram colors by sign of the internal force.
+const Color diagramPositive = brandBlue;
+const Color diagramNegative = Color(0xFFD9485F);

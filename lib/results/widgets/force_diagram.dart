@@ -13,6 +13,11 @@ import 'package:structlab/l10n/strings_internal_forces_pt.dart';
 /// Longest ordinate of the diagram, in px.
 const double _maxOrdinatePx = 52;
 
+/// Values below this are treated as zero when choosing the color.
+const double _signEps = 1e-9;
+
+Color _signColor(double v) => v < -_signEps ? diagramNegative : diagramPositive;
+
 /// Point of the diagram picked by the user.
 class DiagramSelection {
   const DiagramSelection(this.memberId, this.x);
@@ -117,6 +122,12 @@ class DiagramGeometry {
   }
 }
 
+/// A sampled point of a member diagram: position along the member and value.
+typedef _Sample = ({double x, double v});
+
+/// A stretch of the diagram where the value keeps the same sign.
+typedef _Run = ({List<_Sample> points, double sign});
+
 class ForceDiagramPainter extends CustomPainter {
   ForceDiagramPainter({
     required this.geometry,
@@ -133,8 +144,6 @@ class ForceDiagramPainter extends CustomPainter {
   /// Points chosen by the user, by member id.
   final Map<int, List<double>> samples;
   final DiagramSelection? selection;
-
-  static const Color _diagramColor = brandBlue;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -170,36 +179,91 @@ class ForceDiagramPainter extends CustomPainter {
     _drawSelection(canvas);
   }
 
+  /// Samples the member and inserts the points where the value crosses zero,
+  /// so every stretch can be colored by its own sign.
+  List<_Sample> _profile(MemberInternalForces f, int steps) {
+    final out = <_Sample>[];
+    double? prevX, prevV;
+    for (var i = 0; i <= steps; i++) {
+      final x = f.length * i / steps;
+      final v = f.valueAt(geometry.kind, x);
+      if (prevV != null &&
+          ((prevV < -_signEps && v > _signEps) ||
+              (prevV > _signEps && v < -_signEps))) {
+        final t = prevV / (prevV - v);
+        out.add((x: prevX! + (x - prevX) * t, v: 0.0));
+      }
+      out.add((x: x, v: v));
+      prevX = x;
+      prevV = v;
+    }
+    return out;
+  }
+
+  /// Splits the profile into stretches of constant sign. Zero points close
+  /// the current stretch and open the next one.
+  List<_Run> _runs(List<_Sample> profile) {
+    final runs = <_Run>[];
+    var current = <_Sample>[];
+    var sign = 0.0;
+    for (final p in profile) {
+      final s = p.v > _signEps ? 1.0 : (p.v < -_signEps ? -1.0 : 0.0);
+      if (s == 0) {
+        current.add(p);
+        if (sign != 0) {
+          runs.add((points: current, sign: sign));
+          sign = 0;
+        }
+        current = [p];
+      } else if (sign == 0 || s == sign) {
+        sign = s;
+        current.add(p);
+      } else {
+        // Should not happen (crossings are inserted), but stay safe.
+        runs.add((points: current, sign: sign));
+        current = [p];
+        sign = s;
+      }
+    }
+    if (sign != 0 && current.length > 1) {
+      runs.add((points: current, sign: sign));
+    }
+    return runs;
+  }
+
   void _drawMember(Canvas canvas, MemberInternalForces f) {
     final g = geometry;
     const steps = 40;
-    final points = [
-      for (var i = 0; i <= steps; i++)
-        g.ordinatePoint(f, f.length * i / steps),
-    ];
-    final start = g.basePoint(f, 0);
-    final end = g.basePoint(f, f.length);
 
-    final fill = Path()..moveTo(start.dx, start.dy);
-    final outline = Path()..moveTo(start.dx, start.dy);
-    for (final p in points) {
-      fill.lineTo(p.dx, p.dy);
-      outline.lineTo(p.dx, p.dy);
+    for (final run in _runs(_profile(f, steps))) {
+      final color = run.sign < 0 ? diagramNegative : diagramPositive;
+      final first = run.points.first;
+      final last = run.points.last;
+      final start = g.basePoint(f, first.x);
+      final end = g.basePoint(f, last.x);
+
+      final fill = Path()..moveTo(start.dx, start.dy);
+      final outline = Path()..moveTo(start.dx, start.dy);
+      for (final p in run.points) {
+        final o = g.ordinatePoint(f, p.x);
+        fill.lineTo(o.dx, o.dy);
+        outline.lineTo(o.dx, o.dy);
+      }
+      fill
+        ..lineTo(end.dx, end.dy)
+        ..close();
+      outline.lineTo(end.dx, end.dy);
+
+      canvas.drawPath(fill, Paint()..color = color.withValues(alpha: 0.14));
+      canvas.drawPath(
+        outline,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..strokeJoin = StrokeJoin.round,
+      );
     }
-    fill
-      ..lineTo(end.dx, end.dy)
-      ..close();
-    outline.lineTo(end.dx, end.dy);
-
-    canvas.drawPath(fill, Paint()..color = _diagramColor.withValues(alpha: 0.12));
-    canvas.drawPath(
-      outline,
-      Paint()
-        ..color = _diagramColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..strokeJoin = StrokeJoin.round,
-    );
 
     // Value labels: both ends and the extreme in the middle, when it stands out.
     void label(double x) {
@@ -209,7 +273,7 @@ class ForceDiagramPainter extends CustomPainter {
         canvas,
         formatNumber(v),
         g.ordinatePoint(f, x) + g.outward(f, v) * 12,
-        color: _diagramColor,
+        color: _signColor(v),
         fontSize: 10,
         background: canvasBackground,
       );
@@ -237,12 +301,13 @@ class ForceDiagramPainter extends CustomPainter {
     // Points of the table.
     for (final x in samples[f.memberId] ?? const <double>[]) {
       final p = g.ordinatePoint(f, x);
+      final color = _signColor(f.valueAt(geometry.kind, x));
       canvas.drawCircle(p, 3.5, Paint()..color = Colors.white);
       canvas.drawCircle(
         p,
         3.5,
         Paint()
-          ..color = _diagramColor
+          ..color = color
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.6,
       );
@@ -260,11 +325,11 @@ class ForceDiagramPainter extends CustomPainter {
       base,
       tip,
       Paint()
-        ..color = const Color(0xFFD9485F)
+        ..color = ink
         ..strokeWidth = 1.6,
     );
-    canvas.drawCircle(tip, 5, Paint()..color = const Color(0xFFD9485F));
-    canvas.drawCircle(base, 3, Paint()..color = const Color(0xFFD9485F));
+    canvas.drawCircle(tip, 5, Paint()..color = ink);
+    canvas.drawCircle(base, 3, Paint()..color = ink);
   }
 
   @override
@@ -272,6 +337,8 @@ class ForceDiagramPainter extends CustomPainter {
 }
 
 /// The diagram plus the reading of the touched point.
+/// With [allowDrag] false only taps pick a point, so the parent scroll view
+/// keeps working when the user drags over the diagram.
 class ForceDiagramView extends StatefulWidget {
   const ForceDiagramView({
     super.key,
@@ -280,6 +347,7 @@ class ForceDiagramView extends StatefulWidget {
     required this.kind,
     required this.labels,
     required this.samples,
+    this.allowDrag = true,
   });
 
   final StructuralModel model;
@@ -287,6 +355,7 @@ class ForceDiagramView extends StatefulWidget {
   final InternalForceKind kind;
   final ModelLabels labels;
   final Map<int, List<double>> samples;
+  final bool allowDrag;
 
   @override
   State<ForceDiagramView> createState() => _ForceDiagramViewState();
@@ -333,7 +402,9 @@ class _ForceDiagramViewState extends State<ForceDiagramView> {
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapDown: (d) => _pick(geometry, d.localPosition),
-                  onPanUpdate: (d) => _pick(geometry, d.localPosition),
+                  onPanUpdate: widget.allowDrag
+                      ? (d) => _pick(geometry, d.localPosition)
+                      : null,
                   child: CustomPaint(
                     size: Size.infinite,
                     painter: ForceDiagramPainter(
