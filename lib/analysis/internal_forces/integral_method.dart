@@ -67,8 +67,7 @@ class IntegralMethod extends InternalForceMethod {
 
     final labels = ModelLabels.of(model);
     final ordered = [...members]
-      ..sort((a, b) =>
-          _compareNames(labels.member(a.id), labels.member(b.id)));
+      ..sort((a, b) => _compareNames(labels.member(a.id), labels.member(b.id)));
 
     return InternalForcesOutcome.success(
       InternalForcesResult(
@@ -87,8 +86,8 @@ class IntegralMethod extends InternalForceMethod {
 /// n = t rotated 90° counterclockwise.
 class _Oriented {
   _Oriented(this.id, this.left, this.right)
-      : length = (right.position - left.position).distance,
-        direction = unitVec(right.position - left.position);
+    : length = (right.position - left.position).distance,
+      direction = unitVec(right.position - left.position);
 
   final int id;
   final StructuralNode left;
@@ -198,30 +197,30 @@ Map<int, List<_PieceData>> _buildPieces(
 
 /// Reactions, concentrated loads and applied moments.
 List<ExternalAction> _baseActions(ReactionSolution solution) => [
-      for (final r in solution.reactions)
-        ExternalAction(
-          kind: ExternalActionKind.reaction,
-          nodeId: r.nodeId,
-          point: r.point,
-          fx: r.fx,
-          fy: r.fy,
-          moment: r.kind == ReactionKind.moment ? r.value : 0,
-          reaction: r,
-        ),
-      for (final a in solution.actions)
-        if (a.kind != ActionKind.distributed)
-          ExternalAction(
-            kind: a.kind == ActionKind.moment
-                ? ExternalActionKind.moment
-                : ExternalActionKind.concentrated,
-            nodeId: a.nodeId,
-            point: a.point,
-            fx: a.fx,
-            fy: a.fy,
-            moment: a.moment,
-            loadId: a.loadId,
-          ),
-    ];
+  for (final r in solution.reactions)
+    ExternalAction(
+      kind: ExternalActionKind.reaction,
+      nodeId: r.nodeId,
+      point: r.point,
+      fx: r.fx,
+      fy: r.fy,
+      moment: r.kind == ReactionKind.moment ? r.value : 0,
+      reaction: r,
+    ),
+  for (final a in solution.actions)
+    if (a.kind != ActionKind.distributed)
+      ExternalAction(
+        kind: a.kind == ActionKind.moment
+            ? ExternalActionKind.moment
+            : ExternalActionKind.concentrated,
+        nodeId: a.nodeId,
+        point: a.point,
+        fx: a.fx,
+        fy: a.fy,
+        moment: a.moment,
+        loadId: a.loadId,
+      ),
+];
 
 /// Nodes on the start side of [m] when [m] is cut. Null if the other end of
 /// the member is reachable some other way (closed loop).
@@ -293,8 +292,10 @@ class _Core {
   ({double n, double v, double m}) endValues() {
     final shear = _loadNormal.integral().withConstant(startShear);
     final moment = shear.integral().withConstant(startMoment);
-    final normal =
-        _loadTangential.integral().scaled(-1).withConstant(startNormal);
+    final normal = _loadTangential
+        .integral()
+        .scaled(-1)
+        .withConstant(startNormal);
     final x = member.length;
     return (n: normal.at(x), v: shear.at(x), m: moment.at(x));
   }
@@ -362,7 +363,8 @@ MemberInternalForces _finish(
 
     // What the part before the node pushes with, in global axes.
     final global = p.direction * (-end.n) + p.normal * end.v;
-    final turn = math.atan2(
+    final turn =
+        math.atan2(
           cross2(p.direction, m.direction),
           dot2(p.direction, m.direction),
         ) *

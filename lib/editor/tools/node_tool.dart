@@ -120,12 +120,14 @@ class NodeTool extends EditorToolHandler {
     model.members.add(StructuralMember(
       id: model.newId(),
       startNodeId: member.startNodeId,
+      dimensionStyle: member.dimensionStyle,
       endNodeId: node.id,
     ));
     model.members.add(StructuralMember(
       id: model.newId(),
       startNodeId: node.id,
       endNodeId: member.endNodeId,
+      dimensionStyle: member.dimensionStyle,
     ));
     c.select(SelectedType.node, node.id);
     c.status(msgNodeCreated);

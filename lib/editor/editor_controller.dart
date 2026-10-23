@@ -584,7 +584,11 @@ class EditorController extends ChangeNotifier {
   // Applying edits (called by the screen after a dialog returns)
   // ---------------------------------------------------------------------------
 
-  void applyMember(double length, double angleDegrees) {
+  void applyMember(
+    double length,
+    double angleDegrees,
+    DimensionStyle style,
+  ) {
     final member = selectedMember;
     if (member == null) return;
     final start = model.nodeById(member.startNodeId);
@@ -596,6 +600,7 @@ class EditorController extends ChangeNotifier {
       start.position.dx + length * math.cos(rad),
       start.position.dy + length * math.sin(rad),
     );
+    member.dimensionStyle = style;
     status(msgMemberUpdated);
   }
 

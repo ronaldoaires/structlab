@@ -5,7 +5,7 @@ import 'package:structlab/domain/models/load.dart';
 import 'package:structlab/domain/models/structural_model.dart';
 
 /// What the kN/m of a distributed load is measured on.
-/// Today: the length of the member. Change this constant to switch.
+/// The app follows FTool: kN per meter of the real member length.
 enum DistributedBasis { memberLength, horizontalProjection }
 
 const DistributedBasis distributedBasis = DistributedBasis.memberLength;

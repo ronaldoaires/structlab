@@ -10,6 +10,7 @@ import 'package:structlab/editor/dialogs/support_dialog.dart';
 import 'package:structlab/editor/editor_controller.dart';
 import 'package:structlab/editor/editor_types.dart';
 import 'package:structlab/l10n/strings_pt.dart';
+import 'package:structlab/domain/models/member.dart';
 
 /// Opens the edit dialog that matches the current selection and applies the
 /// result to the controller.
@@ -22,15 +23,16 @@ Future<void> editSelected(BuildContext context, EditorController c) async {
       final end = c.model.nodeById(member.endNodeId);
       if (start == null || end == null) return;
       final vec = end.position - start.position;
-      final result = await showDialog<(double, double)>(
+      final result = await showDialog<(double, double, DimensionStyle)>(
         context: context,
         builder: (context) => MemberDialog(
           length: vec.distance,
           angle: math.atan2(vec.dy, vec.dx) * 180 / math.pi,
+          style: member.dimensionStyle,
         ),
       );
       if (result == null || !context.mounted) return;
-      c.applyMember(result.$1, result.$2);
+      c.applyMember(result.$1, result.$2, result.$3);
       break;
 
     case SelectedType.support:

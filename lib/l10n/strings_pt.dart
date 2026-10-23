@@ -158,6 +158,16 @@ const String loadFromBottom = '↑ De baixo';
 const String loadFromLeft = '→ Da esquerda';
 const String loadFromRight = '← Da direita';
 
+const String memberModeAngle = 'Comprimento e ângulo';
+const String memberModeRise = 'Vão e altura';
+const String memberHigherSideLabel = 'Lado mais alto';
+const String sideLeftLabel = 'Esquerdo';
+const String sideRightLabel = 'Direito';
+const String runLabel = 'Vão horizontal';
+const String riseLabel = 'Altura';
+const String memberRiseHelper =
+    'O comprimento e o ângulo serão calculados no passo a passo.';
+
 String loadIntensityLabel(LoadKind kind) => switch (kind) {
   LoadKind.triangular => 'Intensidade máxima (pico)',
   LoadKind.trapezoidal => 'Intensidade na esquerda',
