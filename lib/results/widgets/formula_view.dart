@@ -35,6 +35,7 @@ class FormulaLineView extends StatelessWidget {
       children.add(switch (part) {
         FormulaText() => Text(part.text, style: style),
         FormulaFraction() => _Fraction(part: part, style: style, color: color),
+        FormulaRoot() => _Root(part: part, style: style, color: color),
       });
     }
 
@@ -51,6 +52,55 @@ class FormulaLineView extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Radical sign drawn around the radicand: a short tick, the long stroke up
+/// and the bar over the whole radicand.
+class _Root extends StatelessWidget {
+  const _Root({required this.part, required this.style, required this.color});
+
+  final FormulaRoot part;
+  final TextStyle style;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _RadicalPainter(color),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(13, 4, 2, 0),
+        child: Text(part.radicand, style: style),
+      ),
+    );
+  }
+}
+
+class _RadicalPainter extends CustomPainter {
+  _RadicalPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final h = size.height;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.3
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(
+      Path()
+        ..moveTo(1, h * 0.6)
+        ..lineTo(4, h * 0.52)
+        ..lineTo(7.5, h - 1)
+        ..lineTo(11.5, 1)
+        ..lineTo(size.width, 1),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RadicalPainter old) => old.color != color;
 }
 
 class _Fraction extends StatelessWidget {

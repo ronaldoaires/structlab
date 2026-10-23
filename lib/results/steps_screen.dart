@@ -8,6 +8,7 @@ import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/l10n/strings_reactions_pt.dart';
 import 'package:structlab/l10n/strings_results_pt.dart';
 import 'package:structlab/results/widgets/load_shape_painter.dart';
+import 'package:structlab/results/widgets/right_triangle_painter.dart';
 import 'package:structlab/results/load_formula.dart';
 import 'package:structlab/results/widgets/formula_view.dart';
 
@@ -470,6 +471,79 @@ class _ResultBox extends StatelessWidget {
   }
 }
 
+/// Shown under the length dimension L of an inclined member: where L comes
+/// from. Sketch of the right triangle on the left, Pythagoras on the right.
+class _PythagorasBlock extends StatelessWidget {
+  const _PythagorasBlock({required this.load, required this.labels});
+
+  final EquivalentLoad load;
+  final ModelLabels labels;
+
+  @override
+  Widget build(BuildContext context) {
+    final e = load;
+    final formula = buildPythagorasFormula(e);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: brandTint,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            pythagorasTitle,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: ink,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            pythagorasIntro(e, labels),
+            style: const TextStyle(fontSize: 12.5, height: 1.35, color: inkMuted),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 120,
+                height: 96,
+                child: CustomPaint(
+                  painter: RightTrianglePainter(
+                    legRatio: e.verticalLeg / e.horizontalLeg,
+                    risesToRight: e.risesToRight,
+                    horizontalLabel: horizontalLegLabel(e.horizontalLeg),
+                    verticalLabel: verticalLegLabel(e.verticalLeg),
+                    hypotenuseLabel: hypotenuseLabel,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FormulaLineView(line: formula.symbolic, color: brandBlue),
+                    const SizedBox(height: 8),
+                    FormulaLineView(line: formula.substituted),
+                    const SizedBox(height: 8),
+                    FormulaLineView(line: formula.result, bold: true),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Card of one distributed load: the figure, then the formulas side by side
 /// (resultant on the left, CG on the right).
 class _EquivalentLoadCard extends StatelessWidget {
@@ -584,6 +658,10 @@ class _EquivalentLoadCard extends StatelessWidget {
               ),
             ),
           ),
+          if (e.isInclined) ...[
+            const SizedBox(height: 8),
+            _PythagorasBlock(load: e, labels: labels),
+          ],
           const Divider(height: 20, color: lineColor),
           Center(
             child: Text(

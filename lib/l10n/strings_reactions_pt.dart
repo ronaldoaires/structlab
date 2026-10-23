@@ -337,3 +337,23 @@ String formulaShapeTitle(LoadShape s) => switch (s) {
 String resultantFigureLabel(double r) => 'R = ${_f(r)} kN';
 
 String spanLengthLabel(double length) => 'L = ${_f(length)} m';
+
+// ---------------------------------------------------------------------------
+// Pythagoras (real length of an inclined member)
+// ---------------------------------------------------------------------------
+
+const String pythagorasTitle = 'Comprimento da barra inclinada (Pitágoras)';
+
+String pythagorasIntro(EquivalentLoad e, ModelLabels l) {
+  final name = '${l.node(e.startNodeId)}${l.node(e.endNodeId)}';
+  return 'A barra $name é inclinada. O comprimento L é a hipotenusa do '
+      'triângulo retângulo formado pelo vão horizontal Δx e pela altura Δy. '
+      'É esse L, o comprimento real da barra, que entra na resultante, '
+      'porque a carga é dada em kN por metro de barra.';
+}
+
+String horizontalLegLabel(double v) => 'Δx = ${_f(v)} m';
+
+String verticalLegLabel(double v) => 'Δy = ${_f(v)} m';
+
+const String hypotenuseLabel = 'L';

@@ -17,6 +17,12 @@ class FormulaFraction extends FormulaPart {
   final String denominator;
 }
 
+/// A square root drawn with a real radical sign over [radicand].
+class FormulaRoot extends FormulaPart {
+  const FormulaRoot(this.radicand);
+  final String radicand;
+}
+
 typedef FormulaLine = List<FormulaPart>;
 
 /// One quantity (resultant or CG) shown in three lines:
@@ -38,6 +44,31 @@ class LoadFormulas {
 
   final FormulaBlock resultant;
   final FormulaBlock centroid;
+}
+
+/// Pythagoras for the real length of an inclined segment:
+///   L = √(Δx² + Δy²)
+///   L = √(6² + 2²) = √(36 + 4)
+///   L = √40 = 6.32 m
+FormulaBlock buildPythagorasFormula(EquivalentLoad e) {
+  String n(double v) => formatNumber(v);
+  final dx = e.horizontalLeg;
+  final dy = e.verticalLeg;
+  final sum = dx * dx + dy * dy;
+  return FormulaBlock(
+    symbolic: const [FormulaText('L ='), FormulaRoot('Δx² + Δy²')],
+    substituted: [
+      const FormulaText('L ='),
+      FormulaRoot('${n(dx)}² + ${n(dy)}²'),
+      const FormulaText('='),
+      FormulaRoot('${n(dx * dx)} + ${n(dy * dy)}'),
+    ],
+    result: [
+      const FormulaText('L ='),
+      FormulaRoot(n(sum)),
+      FormulaText('= ${n(e.memberLength)} m'),
+    ],
+  );
 }
 
 /// Builds the textbook formulas of a distributed load. The CG is measured

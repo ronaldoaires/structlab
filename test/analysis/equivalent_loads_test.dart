@@ -63,6 +63,30 @@ void main() {
       expect(eq.point.dy, closeTo(0, 1e-9));
       expect(eq.fx, closeTo(0, 1e-9));
       expect(eq.fy, closeTo(-30, 1e-9));
+      expect(eq.isInclined, isFalse);
+    });
+
+    test('inclined member keeps its legs and real length', () {
+      final m = StructuralModel();
+      m.nodes.add(StructuralNode(id: 1, position: const Offset(0, 2)));
+      m.nodes.add(StructuralNode(id: 2, position: const Offset(6, 0)));
+      m.members
+          .add(StructuralMember(id: 3, startNodeId: 1, endNodeId: 2));
+      m.loads.add(StructuralLoad(
+        id: 4,
+        kind: LoadKind.uniform,
+        nodeId: 1,
+        endNodeId: 2,
+        q1: 10,
+        q2: 10,
+      ));
+      final eq = equivalentLoads(m).single;
+      expect(eq.horizontalLeg, closeTo(6, 1e-9));
+      expect(eq.verticalLeg, closeTo(2, 1e-9));
+      expect(eq.memberLength, closeTo(6.3246, 1e-4));
+      expect(eq.length, closeTo(eq.memberLength, 1e-9));
+      expect(eq.isInclined, isTrue);
+      expect(eq.risesToRight, isFalse);
     });
 
     test('skips concentrated loads and zero loads', () {

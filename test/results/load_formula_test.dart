@@ -10,6 +10,7 @@ String _plain(FormulaLine line) => line
     .map((p) => switch (p) {
           FormulaText() => p.text,
           FormulaFraction() => '${p.numerator}/${p.denominator}',
+          FormulaRoot() => '√(${p.radicand})',
         })
     .join(' ');
 
@@ -50,5 +51,30 @@ void main() {
     final tri = buildLoadFormulas(_load(LoadKind.triangular, 0, 9));
     expect(_plain(tri.resultant.result), 'R = 18 kN');
     expect(_plain(tri.centroid.result), 'CG = 1.33 m');
+  });
+
+  test('pythagoras on a 6 m x 2 m inclined member', () {
+    final m = StructuralModel()
+      ..nodes.addAll([
+        StructuralNode(id: 1, position: const Offset(0, 0)),
+        StructuralNode(id: 2, position: const Offset(6, 2)),
+      ])
+      ..members.add(StructuralMember(id: 3, startNodeId: 1, endNodeId: 2))
+      ..loads.add(StructuralLoad(
+        id: 4,
+        kind: LoadKind.triangular,
+        nodeId: 1,
+        endNodeId: 2,
+        q1: 0,
+        q2: 18,
+      ));
+    final e = equivalentLoads(m).single;
+    expect(e.isInclined, isTrue);
+    expect(e.risesToRight, isTrue);
+
+    final f = buildPythagorasFormula(e);
+    expect(_plain(f.symbolic), 'L = √(Δx² + Δy²)');
+    expect(_plain(f.substituted), 'L = √(6² + 2²) = √(36 + 4)');
+    expect(_plain(f.result), 'L = √(40) = 6.32 m');
   });
 }

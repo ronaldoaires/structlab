@@ -47,6 +47,8 @@ class EquivalentLoad {
     required this.centroid,
     required this.point,
     required this.angleDegrees,
+    required this.spanDx,
+    required this.spanDy,
   });
 
   final int loadId;
@@ -70,6 +72,26 @@ class EquivalentLoad {
 
   /// Direction R points to (same as the load).
   final double angleDegrees;
+
+  /// Horizontal and vertical projections of the loaded segment, from the start
+  /// node to the end node (model coordinates, y up). Used to explain the real
+  /// length L with Pythagoras on inclined members.
+  final double spanDx;
+  final double spanDy;
+
+  /// Horizontal leg Δx and vertical leg Δy (always positive).
+  double get horizontalLeg => spanDx.abs();
+  double get verticalLeg => spanDy.abs();
+
+  /// Real length of the loaded segment: √(Δx² + Δy²).
+  double get memberLength => math.sqrt(spanDx * spanDx + spanDy * spanDy);
+
+  /// True when the segment is neither horizontal nor vertical, so its length
+  /// comes from Pythagoras.
+  bool get isInclined => horizontalLeg > 1e-9 && verticalLeg > 1e-9;
+
+  /// True when the right end (larger x) is higher than the left end.
+  bool get risesToRight => spanDx * spanDy > 0;
 
   double get fx => resultant * math.cos(angleDegrees * math.pi / 180);
   double get fy => resultant * math.sin(angleDegrees * math.pi / 180);
@@ -133,6 +155,8 @@ List<EquivalentLoad> equivalentLoads(StructuralModel model) {
         centroid: alongMember,
         point: a.position + span / memberLength * alongMember,
         angleDegrees: load.angleDegrees,
+        spanDx: span.dx,
+        spanDy: span.dy,
       ),
     );
   }
