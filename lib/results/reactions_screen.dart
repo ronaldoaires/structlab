@@ -15,6 +15,7 @@ import 'package:structlab/analysis/internal_forces/internal_force_method.dart';
 import 'package:structlab/analysis/internal_forces/internal_forces_model.dart';
 import 'package:structlab/results/widgets/force_diagram.dart';
 import 'package:structlab/results/widgets/step_blocks.dart';
+import 'package:structlab/results/diagram_fullscreen_screen.dart';
 
 import 'internal_forces_screen.dart';
 
@@ -360,13 +361,35 @@ class _DiagramsSection extends StatelessWidget {
         for (final k in _diagramOrder) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
-            child: Text(
-              forceKindTitle(k),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: ink,
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    forceKindTitle(k),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: ink,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: diagramExpandTooltip,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.zoom_in, color: brandBlue),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DiagramFullScreen(
+                        model: model,
+                        result: result,
+                        kind: k,
+                        labels: labels,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           StepCard(

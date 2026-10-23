@@ -282,3 +282,8 @@ String evaluationLine(InternalForceKind k, Polynomial p, double x) {
       ? '$head = $result $unit'
       : '$head = $substituted = $result $unit';
 }
+
+const String diagramExpandTooltip = 'Ampliar diagrama';
+const String diagramFitTooltip = 'Enquadrar diagrama';
+const String diagramZoomHint =
+    'Toque para ler valores. Arraste para mover e pince para ampliar.';

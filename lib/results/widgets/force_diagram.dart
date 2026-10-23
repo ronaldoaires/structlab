@@ -34,6 +34,9 @@ class DiagramGeometry {
     required Size size,
     required this.kind,
     required double maxAbs,
+    double zoom = 1,
+    Offset pan = Offset.zero,
+    double maxOrdinatePx = _maxOrdinatePx,
   }) {
     var minX = double.infinity, maxX = -double.infinity;
     var minY = double.infinity, maxY = -double.infinity;
@@ -46,15 +49,15 @@ class DiagramGeometry {
     if (model.nodes.isEmpty) {
       minX = maxX = minY = maxY = 0;
     }
-    const margin = 64.0;
+    final margin = math.max(64.0, maxOrdinatePx + 12);
     final w = math.max(maxX - minX, 0.5);
     final h = math.max(maxY - minY, 0.5);
     final availW = math.max(40.0, size.width - 2 * margin);
     final availH = math.max(40.0, size.height - 2 * margin);
-    scale = math.min(math.min(availW / w, availH / h), 90.0);
+    scale = math.min(math.min(availW / w, availH / h), 90.0) * zoom;
     _mid = Offset((minX + maxX) / 2, (minY + maxY) / 2);
-    _center = Offset(size.width / 2, size.height / 2);
-    pxPerUnit = maxAbs > 1e-9 ? _maxOrdinatePx / maxAbs : 0;
+    _center = Offset(size.width / 2, size.height / 2) + pan;
+    pxPerUnit = maxAbs > 1e-9 ? maxOrdinatePx * zoom / maxAbs : 0;
   }
 
   final StructuralModel model;
@@ -73,9 +76,9 @@ class DiagramGeometry {
   double get side => kind == InternalForceKind.moment ? -1 : 1;
 
   Offset toScreen(Offset p) => Offset(
-        _center.dx + (p.dx - _mid.dx) * scale,
-        _center.dy - (p.dy - _mid.dy) * scale,
-      );
+    _center.dx + (p.dx - _mid.dx) * scale,
+    _center.dy - (p.dy - _mid.dy) * scale,
+  );
 
   double _rad(MemberInternalForces f) => f.angleDegrees * math.pi / 180;
 
