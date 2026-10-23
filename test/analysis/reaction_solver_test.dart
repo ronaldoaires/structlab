@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:structlab/analysis/reactions/reaction_solver.dart';
 import 'package:structlab/domain/models/load.dart';

@@ -24,44 +24,55 @@ const String internalForcesCaption =
 const String methodIntegralName = 'Método das integrais';
 
 String internalForcesFailureMessage(InternalForcesFailure f) => switch (f) {
-      InternalForcesFailure.invalidModel =>
-        'Não há barras válidas para calcular os esforços.',
-      InternalForcesFailure.unsupportedStructure =>
-        'Esta estrutura tem um trecho fechado que o método das integrais ainda não resolve.',
-    };
+  InternalForcesFailure.invalidModel =>
+    'Não há barras válidas para calcular os esforços.',
+  InternalForcesFailure.unsupportedStructure => 'Esta estrutura tem um trecho fechado que o método das integrais ainda não resolve.',
+};
 
 String forceTabLabel(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => 'Cortante',
-      InternalForceKind.moment => 'Momento',
-      InternalForceKind.normal => 'Normal',
-    };
+  InternalForceKind.shear => 'Cortante',
+  InternalForceKind.moment => 'Momento',
+  InternalForceKind.normal => 'Normal',
+};
 
 String forceKindTitle(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => 'Esforço cortante (V)',
-      InternalForceKind.moment => 'Momento fletor (M)',
-      InternalForceKind.normal => 'Esforço normal (N)',
-    };
+  InternalForceKind.shear => 'Esforço cortante (V)',
+  InternalForceKind.moment => 'Momento fletor (M)',
+  InternalForceKind.normal => 'Esforço normal (N)',
+};
 
 String forceSymbol(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => 'V',
-      InternalForceKind.moment => 'M',
-      InternalForceKind.normal => 'N',
-    };
+  InternalForceKind.shear => 'V',
+  InternalForceKind.moment => 'M',
+  InternalForceKind.normal => 'N',
+};
 
 String forceUnit(InternalForceKind k) =>
     k == InternalForceKind.moment ? 'kN·m' : 'kN';
 
 String forceConventionNote(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear =>
-        'Percorrendo a barra da esquerda para a direita (ou de baixo para cima), a cortante é positiva quando as forças à esquerda do corte apontam para o lado esquerdo da barra (para cima, nas barras horizontais).',
-      InternalForceKind.moment =>
-        'O momento é positivo quando traciona a fibra do lado direito do sentido da barra (embaixo, nas barras horizontais). O diagrama é desenhado do lado tracionado.',
-      InternalForceKind.normal =>
-        'A normal é positiva quando a barra está tracionada (sendo puxada) e negativa quando está comprimida.',
-    };
+  InternalForceKind.shear => 'Sinal: percorrendo a barra da esquerda para a direita (ou de baixo para cima), a cortante é positiva quando a parte da esquerda empurra a seção para cima (nas barras horizontais). Azul = positiva, vermelho = negativa.',
+  InternalForceKind.moment => 'Sinal: o momento é positivo quando traciona as fibras de baixo (nas barras horizontais). O diagrama é desenhado do lado tracionado. Azul = positivo, vermelho = negativo.',
+  InternalForceKind.normal => 'Sinal: a normal é positiva na tração (a barra está sendo puxada) e negativa na compressão (a barra está sendo apertada). Azul = tração, vermelho = compressão.',
+};
+
+/// One-sentence meaning of each internal force, for beginners.
+String forceMeaning(InternalForceKind k) => switch (k) {
+  InternalForceKind.shear => 'A cortante é a força que tenta "cortar" a barra, fazendo uma seção deslizar em relação à vizinha.',
+  InternalForceKind.moment => 'O momento fletor mede o quanto a barra tende a dobrar (flexão). É ele que dimensiona a maioria das vigas.',
+  InternalForceKind.normal => 'A normal é a força ao longo do eixo da barra: puxa (tração) ou aperta (compressão).',
+};
+
+/// Relation between diagrams worth remembering.
+String forceTip(InternalForceKind k) => switch (k) {
+  InternalForceKind.shear => 'Dica: onde a cortante muda de sinal (cruza o zero), o momento tem um máximo ou um mínimo.',
+  InternalForceKind.moment => 'Dica: a inclinação do diagrama de momento em cada ponto é o valor da cortante naquele ponto.',
+  InternalForceKind.normal =>
+    'Dica: sem carga na direção da barra, a normal é constante ao longo dela.',
+};
 
 const String diagramHint =
-    'Toque ou arraste sobre o diagrama para ler os valores.';
+    'Toque no diagrama para ler o valor naquele ponto.';
 
 String diagramReading(String member, double x, InternalForceKind k, double v) =>
     'Barra $member · x = ${_f(x)} m · ${forceSymbol(k)} = ${_f(v)} ${forceUnit(k)}';
@@ -102,25 +113,25 @@ String samplingRangeError(double length) =>
 // ---------------------------------------------------------------------------
 
 String stepStartTitle(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => '1. Cortante no início da barra (K1)',
-      InternalForceKind.moment => '1. Momento no início da barra (K2)',
-      InternalForceKind.normal => '1. Normal no início da barra (K)',
-    };
+  InternalForceKind.shear => '1. Cortante no início da barra (K1)',
+  InternalForceKind.moment => '1. Momento no início da barra (K2)',
+  InternalForceKind.normal => '1. Normal no início da barra (K)',
+};
 
 String stepStartIntro(InternalForceKind k) => switch (k) {
       InternalForceKind.shear =>
-        'K1 é o valor da cortante no ponto em que a barra começa. Ele vem da soma das forças perpendiculares à barra que atuam antes dela (reações, cargas concentradas e o fim da barra anterior).',
+        'Imagine cortar a estrutura no início desta barra. K1 é a cortante nesse corte: a soma das forças perpendiculares à barra que atuam antes dela (reações, cargas concentradas e o que vem da barra anterior).',
       InternalForceKind.moment =>
-        'K2 é o valor do momento no início da barra. Se não chega momento, ele é nulo; se chega, usamos o valor do fim da barra anterior.',
+        'K2 é o momento no início da barra. Se nenhum momento chega a esse ponto, K2 = 0 (como numa extremidade livre ou num apoio articulado). Se chega, usamos o valor do fim da barra anterior.',
       InternalForceKind.normal =>
-        'K é a normal no início da barra: a soma das forças na direção da barra que atuam antes dela, com o sinal trocado (tração positiva). Quando a barra gira, a cortante da barra anterior vira normal.',
+        'K é a normal no início da barra: a soma das forças na direção dela que atuam antes do corte, com o sinal trocado (tração positiva). Quando a barra gira, a cortante da barra anterior passa a ser normal.',
     };
 
 String startConstantName(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => 'K1',
-      InternalForceKind.moment => 'K2',
-      InternalForceKind.normal => 'K',
-    };
+  InternalForceKind.shear => 'K1',
+  InternalForceKind.moment => 'K2',
+  InternalForceKind.normal => 'K',
+};
 
 String startNothingLine(InternalForceKind k) =>
     'Nada chega ao início da barra nesta direção: ${startConstantName(k)} = 0.';
@@ -129,12 +140,12 @@ String startResultLine(InternalForceKind k, double value) =>
     '${startConstantName(k)} = ${_f(value)} ${forceUnit(k)}';
 
 String contributionName(ExternalAction a, ModelLabels l) => switch (a.kind) {
-      ExternalActionKind.reaction => 'Reação ${reactionName(a.reaction!, l)}',
-      ExternalActionKind.concentrated => 'Carga em ${l.node(a.nodeId)}',
-      ExternalActionKind.moment => 'Momento em ${l.node(a.nodeId)}',
-      ExternalActionKind.distributed =>
-        'Resultante da carga na barra ${l.member(a.memberId!)}',
-    };
+  ExternalActionKind.reaction => 'Reação ${reactionName(a.reaction!, l)}',
+  ExternalActionKind.concentrated => 'Carga em ${l.node(a.nodeId)}',
+  ExternalActionKind.moment => 'Momento em ${l.node(a.nodeId)}',
+  ExternalActionKind.distributed =>
+    'Resultante da carga na barra ${l.member(a.memberId!)}',
+};
 
 /// Lines that explain where K comes from (only the ones that matter for [k]).
 List<String> startLines(
@@ -176,7 +187,7 @@ List<String> startLines(
 
 const String stepFunctionTitle = '2. Função da carga (análise matricial)';
 const String stepFunctionIntro =
-    'Montamos a matriz com o ponto inicial e o ponto final da carga: x é a posição na barra e y é a intensidade. Igualamos o determinante a zero (regra de Sarrus: multiplicamos em diagonal, positivo de um lado e negativo do outro) e isolamos y, que é a função Q(x).';
+    'Uma carga distribuída que varia de forma linear é uma reta Q(x). Para achá-la, usamos os dois pontos conhecidos (início e fim da carga na barra): x é a posição e y é a intensidade. Igualar o determinante a zero (regra de Sarrus) dá a equação da reta; isolando y, temos Q(x).';
 const String stepNoDistributedLoad =
     'Não há carga distribuída nesta barra: Q(x) = 0.';
 const String sarrusRuleNote =
@@ -217,13 +228,13 @@ String loadDirectionNote(DistributedPiece p, InternalForceKind k) {
 // ---------------------------------------------------------------------------
 
 String stepIntegrationTitle(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => '3. Integrando a carga: cortante V(x)',
-      InternalForceKind.moment => '2. Integrando a cortante: momento M(x)',
-      InternalForceKind.normal => '2. Normal N(x)',
-    };
+  InternalForceKind.shear => '3. Integrando a carga: cortante V(x)',
+  InternalForceKind.moment => '2. Integrando a cortante: momento M(x)',
+  InternalForceKind.normal => '2. Normal N(x)',
+};
 
 const String momentIntegrationNote =
-    'Aqui não é preciso analisar sinais: o momento é sempre a integral da cortante.';
+    'O momento é sempre a integral da cortante: não precisa analisar sinais de cargas, só integrar V(x) e somar K2.';
 
 /// The lines of the integration, the last one being the final function.
 List<String> integrationLines(MemberInternalForces f, InternalForceKind k) {
@@ -264,13 +275,13 @@ List<String> integrationLines(MemberInternalForces f, InternalForceKind k) {
 // ---------------------------------------------------------------------------
 
 String stepValuesTitle(InternalForceKind k) => switch (k) {
-      InternalForceKind.shear => '4. Valores da cortante nos pontos',
-      InternalForceKind.moment => '3. Valores do momento nos pontos',
-      InternalForceKind.normal => '3. Valores da normal nos pontos',
-    };
+  InternalForceKind.shear => '4. Valores da cortante nos pontos',
+  InternalForceKind.moment => '3. Valores do momento nos pontos',
+  InternalForceKind.normal => '3. Valores da normal nos pontos',
+};
 
 const String stepValuesIntro =
-    'Basta substituir x pelas posições ao longo da barra (o ponto inicial e o passo podem ser mudados no botão Pontos).';
+    'Agora é só substituir x pelas posições ao longo da barra. O ponto inicial e o passo podem ser mudados no botão Pontos.';
 
 /// "V(1) = −5·1² + 19 = 14 kN"
 String evaluationLine(InternalForceKind k, Polynomial p, double x) {

@@ -108,23 +108,25 @@ String reactionStepTitle(ReactionStep s, ModelLabels l) => switch (s) {
 
 String reactionStepIntro(ReactionStep s, ModelLabels l) => switch (s) {
   NamesStep() =>
-    'Cada nó recebe uma letra (A, B, C…) da esquerda para a direita. As barras levam o nome dos seus nós (AB, BC…).',
+    'Cada nó recebe uma letra (A, B, C…) da esquerda para a direita. As barras levam o nome dos seus nós (AB, BC…). Usamos esses nomes em todo o cálculo.',
   EquivalentLoadsStep() =>
-    'Cada carga distribuída é trocada por uma única força, a resultante R, aplicada no centro de gravidade CG da geometria.',
+    'Para calcular reações, uma carga distribuída pode ser trocada por uma única força equivalente: a resultante R (a área do desenho da carga), aplicada no centro de gravidade CG dessa área.',
   DecompositionStep() =>
-    'Forças inclinadas são separadas em componente horizontal (Fx) e vertical (Fy) para entrar nas equações. O ângulo é medido a partir do eixo x, no sentido anti-horário.',
+    'Uma força inclinada é separada em duas componentes, uma horizontal (Fx) e uma vertical (Fy), porque as equações de equilíbrio tratam cada direção separadamente. O ângulo é medido a partir do eixo x, no sentido anti-horário.',
   UnknownsStep() =>
-    'Cada reação é adotada como positiva. Se o resultado sair negativo, ela atua no sentido contrário ao adotado.',
+    'Cada apoio impede certos movimentos e, por isso, gera reações. Essas reações são as incógnitas. Adotamos todas como positivas: se o resultado sair negativo, ela atua no sentido contrário ao adotado.',
   EquationStep(:final kind, :final pivotNodeId) => switch (kind) {
     EquationKind.sumMoment =>
-      'Somamos os momentos em torno de ${l.node(pivotNodeId!)}. As reações que passam por esse ponto têm braço zero e não aparecem.',
-    EquationKind.sumFy => 'Soma das forças verticais.',
-    EquationKind.sumFx => 'Soma das forças horizontais.',
+      'Para a estrutura não girar, a soma dos momentos tem que ser zero. Tomamos momentos em torno de ${l.node(pivotNodeId!)}: as reações que passam por esse ponto têm braço zero e somem da equação, o que deixa a conta mais simples.',
+    EquationKind.sumFy =>
+      'Para a estrutura não subir nem descer, a soma das forças verticais tem que ser zero.',
+    EquationKind.sumFx =>
+      'Para a estrutura não deslizar para os lados, a soma das forças horizontais tem que ser zero.',
   },
   CheckStep(:final pivotNodeId) =>
-    'Se as reações estão certas, os momentos em torno de qualquer outro ponto também somam zero. Testamos em ${l.node(pivotNodeId)}.',
+    'Conferência: se as reações estão certas, os momentos em torno de qualquer outro ponto também somam zero. Testamos em ${l.node(pivotNodeId)}. Um resultado diferente de zero indica erro.',
   SummaryStep() =>
-    'Valor positivo: sentido adotado. Valor negativo: sentido contrário ao adotado.',
+    'Valor positivo: a reação atua no sentido adotado. Valor negativo: atua no sentido contrário. A seta mostra o sentido real.',
 };
 
 String equivalentTitle(EquivalentLoad e, ModelLabels l) =>

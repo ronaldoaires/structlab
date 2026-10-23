@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:structlab/analysis/naming/labels.dart';
 import 'package:structlab/domain/models/member.dart';

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:structlab/analysis/internal_forces/integral_method.dart';
 import 'package:structlab/analysis/internal_forces/internal_forces_model.dart';

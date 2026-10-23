@@ -1,5 +1,3 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 import 'package:structlab/analysis/conventions/sign_convention.dart';
 import 'package:structlab/analysis/naming/labels.dart';

@@ -43,8 +43,10 @@ class InternalForcesScreen extends StatefulWidget {
 }
 
 class _InternalForcesScreenState extends State<InternalForcesScreen> {
-  late final InternalForcesOutcome _outcome =
-      widget.method.solve(widget.model, widget.reactions);
+  late final InternalForcesOutcome _outcome = widget.method.solve(
+    widget.model,
+    widget.reactions,
+  );
   late final ModelLabels _labels = ModelLabels.of(widget.model);
 
   SamplingConfig _global = SamplingConfig.standard;
@@ -126,7 +128,7 @@ class _InternalForcesScreenState extends State<InternalForcesScreen> {
               ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 children: [
-                                    Row(
+                  Row(
                     children: [
                       Expanded(
                         child: Text(
@@ -161,6 +163,14 @@ class _InternalForcesScreenState extends State<InternalForcesScreen> {
                     methodIntegralName,
                     style: const TextStyle(fontSize: 12, color: inkMuted),
                   ),
+                  Text(
+                    forceMeaning(k),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      height: 1.35,
+                      color: ink,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   StepCard(
                     child: ForceDiagramView(
@@ -178,6 +188,16 @@ class _InternalForcesScreenState extends State<InternalForcesScreen> {
                       fontSize: 12,
                       height: 1.35,
                       color: inkMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    forceTip(k),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                      color: brandBlue,
                     ),
                   ),
                   const SizedBox(height: 20),

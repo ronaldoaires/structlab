@@ -392,6 +392,17 @@ class _DiagramsSection extends StatelessWidget {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              forceMeaning(k),
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                color: inkMuted,
+              ),
+            ),
+          ),
           StepCard(
             child: ForceDiagramView(
               model: model,
