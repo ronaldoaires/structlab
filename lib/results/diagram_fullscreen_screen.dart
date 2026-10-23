@@ -8,6 +8,7 @@ import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/domain/models/structural_model.dart';
 import 'package:structlab/l10n/strings_internal_forces_pt.dart';
 import 'package:structlab/results/widgets/force_diagram.dart';
+import 'package:structlab/results/widgets/diagram_legend.dart';
 
 /// One diagram (V, M or N) on a full screen, with pinch zoom, pan and
 /// tap-to-read, like the drawing canvas.
@@ -160,13 +161,20 @@ class _DiagramFullScreenState extends State<DiagramFullScreen> {
                 color: Colors.white,
                 border: Border(top: BorderSide(color: lineColor)),
               ),
-              child: Text(
-                _reading(),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: brandBlue,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DiagramLegend(kind: widget.kind),
+                  const SizedBox(height: 8),
+                  Text(
+                    _reading(),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: brandBlue,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

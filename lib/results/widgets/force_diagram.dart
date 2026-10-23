@@ -9,6 +9,7 @@ import 'package:structlab/core/theme/colors.dart';
 import 'package:structlab/domain/models/structural_model.dart';
 import 'package:structlab/editor/painting/paint_utils.dart';
 import 'package:structlab/l10n/strings_internal_forces_pt.dart';
+import 'package:structlab/results/widgets/diagram_legend.dart';
 
 /// Longest ordinate of the diagram, in px.
 const double _maxOrdinatePx = 52;
@@ -423,7 +424,9 @@ class _ForceDiagramViewState extends State<ForceDiagramView> {
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
+        DiagramLegend(kind: widget.kind),
+        const SizedBox(height: 8),
         Text(
           _reading(),
           style: const TextStyle(

@@ -298,3 +298,15 @@ const String diagramExpandTooltip = 'Ampliar diagrama';
 const String diagramFitTooltip = 'Enquadrar diagrama';
 const String diagramZoomHint =
     'Toque para ler valores. Arraste para mover e pince para ampliar.';
+
+String legendPositiveLabel(InternalForceKind k) => switch (k) {
+      InternalForceKind.shear => 'Cortante positiva',
+      InternalForceKind.moment => 'Momento positivo',
+      InternalForceKind.normal => 'Tração',
+    };
+
+String legendNegativeLabel(InternalForceKind k) => switch (k) {
+      InternalForceKind.shear => 'Cortante negativa',
+      InternalForceKind.moment => 'Momento negativo',
+      InternalForceKind.normal => 'Compressão',
+    };

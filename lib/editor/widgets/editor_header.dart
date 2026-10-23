@@ -32,14 +32,15 @@ class EditorHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: brandBlue,
-              borderRadius: BorderRadius.circular(10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.asset(
+              'assets/icon/icon.png',
+              width: 36,
+              height: 36,
+              cacheWidth: 108, // decodes small: the source file is 1024 px
+              filterQuality: FilterQuality.medium,
             ),
-            child: const Icon(Icons.architecture, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(
