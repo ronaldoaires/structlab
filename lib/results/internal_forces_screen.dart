@@ -13,6 +13,7 @@ import 'package:structlab/results/widgets/member_force_card.dart';
 import 'package:structlab/results/widgets/sampling_dialog.dart';
 import 'package:structlab/results/widgets/step_blocks.dart';
 import 'package:structlab/services/entitlements.dart';
+import 'package:structlab/results/diagram_fullscreen_screen.dart';
 
 const List<InternalForceKind> _tabOrder = [
   InternalForceKind.shear,
@@ -125,13 +126,35 @@ class _InternalForcesScreenState extends State<InternalForcesScreen> {
               ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 children: [
-                  Text(
-                    forceKindTitle(k),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: ink,
-                    ),
+                                    Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          forceKindTitle(k),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: ink,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: diagramExpandTooltip,
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.zoom_in, color: brandBlue),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DiagramFullScreen(
+                              model: widget.model,
+                              result: result,
+                              kind: k,
+                              labels: _labels,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
